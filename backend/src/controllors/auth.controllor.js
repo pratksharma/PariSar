@@ -2,229 +2,158 @@ import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
 import { generateAccessToken } from '../utils/accessToken.js'
 import { generateRefreshToken, verifyRefreshToken } from '../utils/refreshToken.js'
+import ApiError from "../utils/ApiError.js";
+import asyncHandler from "../utils/asyncHandler.js"
 
-export const registerUser = async (req, res) => {
-    try {
-        const { name, email, phone, password, role } = req.body;
+export const registerUser = asyncHandler(async (req, res) => {
+    const { name, email, phone, password, role } = req.body;
 
-        if (!name || !email || !phone || !password || !role) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required.",
-            });
-        }
-
-        const existingUser = await User.findOne({
-            $or: [{ email }, { phone }],
-        });
-
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message:
-                    existingUser.email === email
-                        ? "Email already exists."
-                        : "Phone number already exists.",
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await User.create({
-            name,
-            email,
-            phone,
-            password: hashedPassword,
-            role,
-        });
-
-        const accessToken = generateAccessToken(user)
-        const refreshToken = generateRefreshToken(user);
-
-        user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-        await user.save();
-
-
-        const userData = user.toObject();
-
-        return res.status(201).json({
-            success: true,
-            message: "User registered successfully.",
-            accessToken,
-            refreshToken,
-            user: userData,
-        });
-    } catch (error) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error.",
-        });
+    if (!name || !email || !phone || !password || !role) {
+        throw new ApiError(400, "All fields are required.");
     }
-};
 
-export const loginUser = async (req, res) => {
-    try {
-        const { identifier, password } = req.body;
+    const existingUser = await User.findOne({
+        $or: [{ email }, { phone }],
+    });
 
-        if (!identifier || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Email/Phone and password are required.",
-            });
-        }
-
-        const user = await User.findOne({
-            $or: [
-                { email: identifier },
-                { phone: identifier },
-            ],
-        }).select("+password");
-
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid credentials.",
-            });
-        }
-
-        const isPasswordCorrect = await bcrypt.compare(
-            password,
-            user.password
-        );
-
-        if (!isPasswordCorrect) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid credentials.",
-            });
-        }
-
-        const accessToken = generateAccessToken(user);
-        const refreshToken = generateRefreshToken(user);
-
-        user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
-        await user.save();
-
-        const userData = user.toObject();
-        delete userData.password;
-        delete userData.refreshTokenHash;
-
-        return res.status(200).json({
-            success: true,
-            message: "Login successful.",
-            accessToken,
-            refreshToken,
-            user: userData,
-        });
-    } catch (error) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error.",
-        });
+    if (existingUser) {
+        throw new ApiError(409, existingUser.email === email
+            ? "Email already exists."
+            : "Phone number already exists.");
     }
-};
 
-export const refreshAccessToken = async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        if (!refreshToken) {
-            return res.status(400).json({
-                success: false,
-                message: "Refresh token is required.",
-            });
-        }
+    const user = await User.create({
+        name,
+        email,
+        phone,
+        password: hashedPassword,
+        role,
+    });
 
-        const decoded = verifyRefreshToken(refreshToken);
+    const accessToken = generateAccessToken(user)
+    const refreshToken = generateRefreshToken(user);
 
-        const user = await User.findById(decoded.id).select("+refreshTokenHash");;
+    user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    await user.save();
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
-            });
-        }
 
-        const isValid = await bcrypt.compare(
-            refreshToken,
-            user.refreshTokenHash
-        );
+    const userData = user.toObject();
 
-        if (!isValid) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid refresh token.",
-            });
-        }
+    return res.status(201).json({
+        success: true,
+        message: "User registered successfully.",
+        accessToken,
+        refreshToken,
+        user: userData,
+    });
+});
 
-        const newAccessToken = generateAccessToken(user);
-        const newRefreshToken = generateRefreshToken(user);
+export const loginUser = asyncHandler(async (req, res) => {
+    const { identifier, password } = req.body;
 
-        user.refreshTokenHash = await bcrypt.hash(newRefreshToken, 10);
-        await user.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Access token refreshed successfully.",
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-        });
-    } catch (error) {
-        console.error(error);
-
-        return res.status(401).json({
-            success: false,
-            message: "Invalid or expired refresh token.",
-        });
+    if (!identifier || !password) {
+        throw new ApiError(400, "Email/Phone and password are required");
     }
-};
 
-export const getUser = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
+    const user = await User.findOne({
+        $or: [
+            { email: identifier },
+            { phone: identifier },
+        ],
+    }).select("+password");
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            user,
-        });
-    } catch (error) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error.",
-        });
+    if (!user) {
+        throw new ApiError(404, "User not found");
     }
-};
 
-export const logoutUser = async (req, res) => {
-    try {
-        await User.findByIdAndUpdate(req.user.id, {
-            refreshTokenHash: null,
-        });
+    const isPasswordCorrect = await bcrypt.compare(
+        password,
+        user.password
+    );
 
-        return res.status(200).json({
-            success: true,
-            message: "Logged out successfully.",
-        });
-    } catch (error) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error.",
-        });
+    if (!isPasswordCorrect) {
+        throw new ApiError(401, "Invalid credentials.");
     }
-};
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    await user.save();
+
+    const userData = user.toObject();
+    delete userData.password;
+    delete userData.refreshTokenHash;
+
+    return res.status(200).json({
+        success: true,
+        message: "Login successful.",
+        accessToken,
+        refreshToken,
+        user: userData,
+    });
+});
+
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        throw new ApiError(400, "Refresh token is required.");
+    }
+
+    const decoded = verifyRefreshToken(refreshToken);
+
+    const user = await User.findById(decoded.id).select("+refreshTokenHash");;
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const isValid = await bcrypt.compare(
+        refreshToken,
+        user.refreshTokenHash
+    );
+
+    if (!isValid) {
+        throw new ApiError(401, "Invalid refresh token.");
+    }
+
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+
+    user.refreshTokenHash = await bcrypt.hash(newRefreshToken, 10);
+    await user.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Access token refreshed successfully.",
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+    });
+});
+
+export const getUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json({
+        success: true,
+        user,
+    });
+});
+
+export const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user.id, {
+        refreshTokenHash: null,
+    });
+
+    return res.status(200).json({
+        success: true,
+        message: "Logged out successfully.",
+    });
+});
