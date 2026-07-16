@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['resident', 'gaurd', 'society-admin'],
+        enum: ['resident', 'gaurd', 'admin'],
         default: "resident",
         required: true
     },
@@ -31,9 +31,10 @@ const UserSchema = new mongoose.Schema({
         default: null,
         select: false
     },
-    isVerified: {
-        type: Boolean,
-        default: false
+    approvalStatus: {
+        type: String,
+        enum: ["PENDING", "APPROVED", "REJECTED"],
+        default: "PENDING"
     }
 }, { timestamps: true })
 

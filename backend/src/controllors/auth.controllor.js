@@ -8,7 +8,7 @@ import asyncHandler from "../utils/asyncHandler.js"
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, phone, password, role } = req.body;
 
-    if (!name || !email || !phone || !password || !role) {
+    if (!name || !email || !phone || !password) {
         throw new ApiError(400, "All fields are required.");
     }
 
