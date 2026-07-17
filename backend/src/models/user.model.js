@@ -21,6 +21,13 @@ const UserSchema = new mongoose.Schema({
         default: "resident",
         required: true
     },
+    society: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Society",
+        default: null
+    },
+    flatNumber: String,
+    tower: String,
     password: {
         type: String,
         required: true,
