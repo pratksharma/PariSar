@@ -388,3 +388,99 @@ export const getAllMembers = asyncHandler(async (req, res) => {
         data: members,
     });
 });
+
+export const inviteGuard = asyncHandler(async (req, res) => {
+    const admin = req.user;
+    const { name, phone, email } = req.body;
+
+    if (!name || !phone)
+        throw new ApiError(400, "Name and phone are required.");
+
+    if (admin.role !== "admin")
+        throw new ApiError(403, "Only admins can invite guards.");
+
+    const society = await Society.findById(admin.society);
+
+    if (!society)
+        throw new ApiError(404, "Society not found.");
+
+    const existingInvite = await GuardInvitation.findOne({
+        phone,
+        accepted: false,
+        expiresAt: { $gt: new Date() },
+    });
+
+    if (existingInvite)
+        throw new ApiError(400, "An active invitation already exists.");
+
+    const inviteCode = crypto.randomBytes(4).toString("hex").toUpperCase();
+
+    const invitation = await GuardInvitation.create({
+        society: society._id,
+        invitedBy: admin._id,
+        name,
+        phone,
+        email,
+        inviteCode,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    res.status(201).json({
+        success: true,
+        message: "Guard invitation created successfully.",
+        invitation,
+    });
+});
+
+export const acceptGuardInvite = asyncHandler(async (req, res) => {
+    const { inviteCode } = req.body;
+    const user = req.user;
+
+    if (!inviteCode)
+        throw new ApiError(400, "Invite code is required.");
+
+    if (user.society)
+        throw new ApiError(400, "You already belong to a society.");
+
+    const invitation = await GuardInvitation.findOne({
+        inviteCode: inviteCode.toUpperCase(),
+    });
+
+    if (!invitation)
+        throw new ApiError(404, "Invalid invite code.");
+
+    if (invitation.accepted)
+        throw new ApiError(400, "This invitation has already been used.");
+
+    if (invitation.expiresAt < new Date())
+        throw new ApiError(400, "Invitation has expired.");
+
+    if (invitation.phone !== user.phone)
+        throw new ApiError(
+            403,
+            "This invitation was issued for another phone number."
+        );
+
+    const society = await Society.findById(invitation.society);
+
+    if (!society)
+        throw new ApiError(404, "Society not found.");
+
+    user.role = "guard";
+    user.society = society._id;
+
+    await user.save();
+
+    if (!society.guards.includes(user._id)) {
+        society.guards.push(user._id);
+        await society.save();
+    }
+
+    invitation.accepted = true;
+    await invitation.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Joined society as a guard successfully.",
+    });
+});
