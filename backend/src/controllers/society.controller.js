@@ -102,3 +102,35 @@ export const getSociety = asyncHandler(async (req, res) => {
         data: society
     })
 })
+
+export const updateSociety = asyncHandler(async (req, res) => {
+    const { name, address, description } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user.role !== "admin" || !user.society) {
+        throw new ApiError(403, "Only society admin can update society details");
+    }
+
+    const society = await Society.findById(user.society);
+
+    if (!society) {
+        throw new ApiError(404, "Society not found");
+    }
+
+    if (name) society.name = name;
+    if (address) society.address = address;
+    if (description !== undefined) society.description = description;
+
+    await society.save();
+
+    res.status(200).json({
+        success: true,
+        message: "Society updated successfully",
+        data: society,
+    });
+});
