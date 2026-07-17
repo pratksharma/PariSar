@@ -6,5 +6,6 @@ const societyRouter = Router();
 
 societyRouter.post("/create", authMiddleware, createSociety)
 societyRouter.get("/my", authMiddleware, getMySociety)
+societyRouter.get("/:societyId", getSociety)
 
 export default societyRouter;

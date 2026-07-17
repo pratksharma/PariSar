@@ -82,3 +82,15 @@ export const getMySociety = asyncHandler(async (req, res) => {
         data: society
     })
 })
+
+export const getSociety = asyncHandler(async (req, res) => {
+    const { societyId } = req.params;
+
+    const society = await Society.findById(societyId).populate("admin");
+
+    res.status(200).json({
+        success: true,
+        message: "Society data fetched successfully",
+        data: society
+    })
+})
