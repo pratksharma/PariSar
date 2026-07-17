@@ -1,12 +1,19 @@
 import { Router } from "express";
 import authMiddleware from "../middlewares/auth.middleware.js"
-import { createSociety, getMySociety, getSociety, updateSociety } from "../controllers/society.controller.js";
+import { approveRequest, createSociety, deleteSociety, getAllMembers, getMySociety, getPendingRequests, getSociety, joinSociety, rejectRequest, removeMember, updateSociety } from "../controllers/society.controller.js";
 
 const societyRouter = Router();
 
 societyRouter.post("/create", authMiddleware, createSociety)
 societyRouter.get("/my", authMiddleware, getMySociety)
 societyRouter.get("/:societyId", getSociety)
-societyRouter.get("/update", authMiddleware, updateSociety)
+societyRouter.patch("/update", authMiddleware, updateSociety)
+societyRouter.delete("/delete", authMiddleware, deleteSociety)
+societyRouter.post("/join", authMiddleware, joinSociety)
+societyRouter.get("/pending-requests", authMiddleware, getPendingRequests)
+societyRouter.patch("/approve/:userId", authMiddleware, approveRequest)
+societyRouter.patch("/reject/:userId", authMiddleware, rejectRequest)
+societyRouter.delete("/remove/:userId", authMiddleware, removeMember)
+societyRouter.get("/members", authMiddleware, getAllMembers)
 
 export default societyRouter;
