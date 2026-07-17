@@ -74,6 +74,10 @@ export const getMySociety = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
 
+    if (!user.society) {
+        throw new ApiError(404, "You are not a member of any society");
+    }
+
     const society = await Society.findById(user.society).populate("admin");
 
     res.status(200).json({
@@ -87,6 +91,10 @@ export const getSociety = asyncHandler(async (req, res) => {
     const { societyId } = req.params;
 
     const society = await Society.findById(societyId).populate("admin");
+
+    if (!society) {
+        throw new ApiError(404, "Society not found");
+    }
 
     res.status(200).json({
         success: true,
