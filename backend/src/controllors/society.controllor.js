@@ -63,6 +63,22 @@ export const createSociety = asyncHandler(async (req, res) => {
     res.status(201).json({
         success: true,
         message: "Society created successfully",
-        society,
+        data: society,
     });
 });
+
+export const getMySociety = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const society = await Society.findById(user.society).populate("admin");
+
+    res.status(200).json({
+        success: true,
+        message: "Society data fetched successfully",
+        data: society
+    })
+})
