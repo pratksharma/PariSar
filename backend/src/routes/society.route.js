@@ -5,6 +5,6 @@ import { createSociety, getMySociety, getSociety } from "../controllors/society.
 const societyRouter = Router();
 
 societyRouter.post("/create", authMiddleware, createSociety)
-societyRouter.post("/my", authMiddleware, getMySociety)
+societyRouter.get("/my", authMiddleware, getMySociety)
 
 export default societyRouter;
