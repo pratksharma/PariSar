@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "uniwind";
+
+@import "heroui-native/styles";
+
+/* End-user path: heroui-native lives in the project's node_modules, one
+   level up from this src/global.css file. */
+@source '../node_modules/heroui-native/lib';
+
+@theme {
+  --font-serif-medium: "SourceSerif4_500Medium";
+  --font-serif-medium-italic: "SourceSerif4_500Medium_Italic";
+
+  --font-normal: "DMSans_400Regular";
+  --font-medium: "DMSans_500Medium";
+  --font-bold: "DMSans_700Bold";
+}
