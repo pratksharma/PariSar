@@ -17,9 +17,14 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (existingUser) {
-        throw new ApiError(409, existingUser.email === email
-            ? "Email already exists."
-            : "Phone number already exists.");
+        throw new ApiError(
+            409,
+            existingUser.email === email
+                ? "Email already exists."
+                : "Phone number already exists.",
+            [],
+            existingUser.email === email ? "email" : "phone"
+        );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,7 +70,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     }).select("+password");
 
     if (!user) {
-        throw new ApiError(404, "User not found");
+        throw new ApiError(401, "Invalid credentials.");
     }
 
     const isPasswordCorrect = await bcrypt.compare(

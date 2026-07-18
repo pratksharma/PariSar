@@ -1,4 +1,4 @@
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, type JSX } from "react";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { HeroUINativeConfig, HeroUINativeProvider } from "heroui-native";
@@ -15,7 +15,9 @@ import {
 } from "@expo-google-fonts/dev";
 
 import "../global.css";
+
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { useAuthStore } from "@/stores/authStore";
 
 const config: HeroUINativeConfig = {
   devInfo: {
@@ -26,7 +28,7 @@ const config: HeroUINativeConfig = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout(): JSX.Element {
-  const [loaded, error] = useFonts({
+  const [fontsLoaded] = useFonts({
     SourceSerif4_500Medium,
     SourceSerif4_500Medium_Italic,
     DMSans_400Regular,
@@ -34,34 +36,48 @@ export default function RootLayout(): JSX.Element {
     DMSans_700Bold,
   });
 
-  useEffect(() => {
-    if (loaded || error) {
-      void SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
+  const hydrate = usePreferencesStore((s) => s.hydrate);
+  const theme = usePreferencesStore((s) => s.preferences.theme);
+  const onboarded = usePreferencesStore((s) => s.preferences.onboarded);
 
-  const hydrate = usePreferencesStore((state) => state.hydrate);
+  const initialize = useAuthStore((s) => s.initialize);
+  const initialized = useAuthStore((s) => s.initialized);
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     hydrate();
+    initialize();
   }, []);
 
-  const theme = usePreferencesStore((state) => state.preferences.theme);
+  useEffect(() => {
+    if (theme) {
+      Uniwind.setTheme(theme);
+    }
+  }, [theme]);
 
   useEffect(() => {
-    if (!theme) return;
-
-    Uniwind.setTheme(theme ?? "system");
-  }, [theme]);
+    if (fontsLoaded && initialized) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, initialized]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider config={config}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="onboarding" options={{ title: "Onboarding" }} />
+          <Stack.Protected guard={!onboarded}>
+            <Stack.Screen name="onboarding" />
+          </Stack.Protected>
 
-          <Stack.Screen name="index" options={{ title: "Home" }} />
+          <Stack.Protected guard={onboarded && !user}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+
+          <Stack.Protected guard={onboarded && !!user}>
+            <Stack.Screen name="index" />
+          </Stack.Protected>
         </Stack>
+
         <StatusBar style="auto" />
       </HeroUINativeProvider>
     </GestureHandlerRootView>

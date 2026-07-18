@@ -5,11 +5,17 @@ const errorHandler = (err, req, res, next) => {
 
     // Custom API Error
     if (err instanceof ApiError) {
-        return res.status(err.statusCode).json({
+        const response = {
             success: false,
             message: err.message,
             errors: err.errors,
-        });
+        };
+
+        if (err.field) {
+            response.field = err.field;
+        }
+
+        return res.status(err.statusCode).json(response);
     }
 
     // Mongoose Validation Error
@@ -33,6 +39,7 @@ const errorHandler = (err, req, res, next) => {
         return res.status(409).json({
             success: false,
             message: `${field} already exists`,
+            field,
         });
     }
 

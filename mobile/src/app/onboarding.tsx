@@ -3,7 +3,6 @@ import { Image, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Lucide } from "@react-native-vector-icons/lucide";
-import { router } from "expo-router";
 import { usePreferencesStore } from "@/stores/preferences.store";
 
 const Onboarding = () => {
@@ -14,8 +13,6 @@ const Onboarding = () => {
 
   async function finish() {
     await setOnboarded(true);
-
-    router.replace("/");
   }
 
   return (

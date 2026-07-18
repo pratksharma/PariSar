@@ -1,17 +1,29 @@
-import { usePreferencesStore } from "@/stores/preferences.store";
-import { Redirect, router } from "expo-router";
-import { Button } from "heroui-native";
+import { useAuthStore } from "@/stores/authStore";
+import Lucide from "@react-native-vector-icons/lucide";
+import { Button, useThemeColor, useToast } from "heroui-native";
 import { StyleSheet, Text, View } from "react-native";
 
 const Home = () => {
-  const onboarded = usePreferencesStore((state) => state.preferences.onboarded);
+  const logout = useAuthStore((state) => state.logout);
+  const { toast } = useToast();
 
-  if (!onboarded) {
-    return <Redirect href="/onboarding" />;
-  }
   return (
     <View className="flex-1 items-center justify-center">
       <Text>Home</Text>
+      <Button
+        onPress={async () => {
+          await logout();
+
+          toast.show({
+            variant: "default",
+            label: "Signed out",
+            description: "You have been logged out.",
+            icon: <Lucide name="circle-check" size={20} />,
+          });
+        }}
+      >
+        Logout
+      </Button>
     </View>
   );
 };
