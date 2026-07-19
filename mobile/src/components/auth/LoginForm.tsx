@@ -52,14 +52,14 @@ export default function LoginForm() {
         variant: "success",
         label: "Welcome back",
         description: "Successfully signed in.",
-        icon: <Lucide name="shield-check" size={20} color={success} />,
+        icon: <Lucide name="shield-check" size={24} color={success} />,
       });
     } catch (err: any) {
       toast.show({
         variant: "danger",
         label: "Login failed",
         description: err?.response?.data?.message ?? err.message,
-        icon: <Lucide name="shield-alert" size={20} color={danger} />,
+        icon: <Lucide name="shield-alert" size={24} color={danger} />,
       });
     }
   };

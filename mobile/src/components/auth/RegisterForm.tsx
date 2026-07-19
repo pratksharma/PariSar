@@ -75,7 +75,7 @@ export default function RegisterForm() {
         variant: "success",
         label: "Account created",
         description: "Welcome to PariSar.",
-        icon: <Lucide name="shield-check" size={20} color={success} />,
+        icon: <Lucide name="shield-check" size={24} color={success} />,
       });
     } catch (err: any) {
       console.log(err.response?.data);
@@ -95,7 +95,7 @@ export default function RegisterForm() {
         variant: "danger",
         label: "Registration failed",
         description: err?.response?.data?.message ?? err.message,
-        icon: <Lucide name="shield-alert" size={20} color={danger} />,
+        icon: <Lucide name="shield-alert" size={24} color={danger} />,
       });
     }
   };

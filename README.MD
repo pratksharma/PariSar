@@ -1,5 +1,7 @@
 # PariSar
 
+<img src="./public/banner.png" width="100%" />
+
 PariSar is a modern society management platform that streamlines communication, visitor management, maintenance, announcements, complaints, deliveries, and other day-to-day operations for residential communities.
 
 This repository serves as the **workspace** for the PariSar project and contains both the mobile application and the backend as separate projects.
