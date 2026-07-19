@@ -17,7 +17,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.pratksharma.PariSar"
     },
     "web": {
       "output": "static",
@@ -35,11 +36,19 @@
         }
       ],
       "expo-status-bar",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-image",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ddcc0b0a-46c4-4578-96c8-ae14703df69c"
+      }
     }
   }
 }
