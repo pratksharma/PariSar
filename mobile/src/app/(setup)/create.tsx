@@ -83,7 +83,7 @@ export default function Create() {
           Create Society
         </Typography.Heading>
 
-        <Typography.Paragraph className="font-medium text-center text-muted">
+        <Typography.Paragraph className="font-normal text-center text-muted">
           Create your society to become its administrator.
         </Typography.Paragraph>
 

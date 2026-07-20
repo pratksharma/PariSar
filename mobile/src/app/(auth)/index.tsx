@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
-import { Description, Tabs } from "heroui-native";
+import { Description, Tabs, Typography } from "heroui-native";
 import RegisterForm from "@/components/auth/RegisterForm";
 import LoginForm from "@/components/auth/LoginForm";
 
@@ -16,11 +16,13 @@ export default function AuthScreen() {
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View className="flex-1 px-6 pt-16 pb-8">
             <View className="mt-8 items-center">
-              <Text className="text-4xl font-serif-medium">
+              <Typography.Heading className="text-4xl font-serif-medium">
                 {tab === "login" ? "Welcome Back" : "Create Account"}
-              </Text>
+              </Typography.Heading>
 
-              <Text className="mt-2 font-normal">Manage your society with ease.</Text>
+              <Typography.Paragraph className="mt-2 font-normal">
+                Manage your society with ease.
+              </Typography.Paragraph>
             </View>
 
             {/* Tabs */}

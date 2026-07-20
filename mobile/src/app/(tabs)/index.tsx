@@ -4,7 +4,7 @@ const Home = () => {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View className="p-4 pt-25">
-        <Text>
+        <Text className="font-normal">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vitae urna ac lorem varius
           placerat. Maecenas ac elit nec sem interdum tempus. Sed varius tellus nec ipsum varius,
           vel pulvinar eros dignissim. Morbi sed mi ut turpis eleifend fermentum. Nunc scelerisque

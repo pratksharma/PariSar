@@ -10,7 +10,7 @@ export default function SetupScreen() {
         Let's get you settled
       </Typography.Heading>
 
-      <Typography.Paragraph className="font-medium text-center text-muted">
+      <Typography.Paragraph className="font-normal text-center text-muted">
         Choose how you'd like to begin your journey with SocietyHub.
       </Typography.Paragraph>
 

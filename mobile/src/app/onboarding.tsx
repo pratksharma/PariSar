@@ -37,7 +37,7 @@ const Onboarding = () => {
           </Typography.Heading>{" "}
           Effortless, Daily Living
         </Typography.Heading>
-        <Typography.Paragraph align="center" className="font-medium" color="muted">
+        <Typography.Paragraph align="center" className="font-normal" color="muted">
           Manage visitors, stay updated with notices, raise complaints, and connect with your
           community—all from one secure and easy-to-use app.
         </Typography.Paragraph>

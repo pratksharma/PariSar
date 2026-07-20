@@ -9,8 +9,8 @@ import {
   useFonts,
   SourceSerif4_500Medium,
   SourceSerif4_500Medium_Italic,
-  DMSans_400Regular,
-  DMSans_500Medium,
+  Outfit_400Regular,
+  Outfit_500Medium,
   DMSans_700Bold,
 } from "@expo-google-fonts/dev";
 
@@ -31,8 +31,8 @@ export default function RootLayout(): JSX.Element {
   const [fontsLoaded] = useFonts({
     SourceSerif4_500Medium,
     SourceSerif4_500Medium_Italic,
-    DMSans_400Regular,
-    DMSans_500Medium,
+    Outfit_400Regular,
+    Outfit_500Medium,
     DMSans_700Bold,
   });
 
