@@ -60,13 +60,16 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => {
-            return (
+          tabBarIcon: ({ focused, color, size }) => {
+            return focused ? (
               <Image
-                source={require("@/assets/onboarding-banner.jpg")}
-                // height={size}
-                // width={size}
-                className={`h-6 w-6 rounded-full`}
+                source={require("@/assets/profile-icon.png")}
+                className="h-6 w-6 rounded-full outline-2 outline-muted"
+              />
+            ) : (
+              <Image
+                source={require("@/assets/profile-icon.png")}
+                className="h-6 w-6 rounded-full"
               />
             );
           },

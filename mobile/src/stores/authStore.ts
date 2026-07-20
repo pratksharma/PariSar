@@ -5,14 +5,34 @@ import { api } from "@/lib/api";
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";
 
+export type UserRole = "resident" | "admin" | "guard";
+
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface Society {
+  _id: string;
+  name: string;
+  address: string;
+  description: string;
+  uniqueCode: string;
+  admin: string;
+  totalResidents: number;
+  totalGuards: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   _id: string;
   name: string;
   email: string;
   phone: string;
-  role: "resident" | "admin" | "guard";
-  isVerified: boolean;
-  society?: string;
+  role: UserRole;
+  approvalStatus: ApprovalStatus;
+  society?: Society;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthState {
