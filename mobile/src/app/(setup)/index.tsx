@@ -10,7 +10,7 @@ export default function SetupScreen() {
         Let's get you settled
       </Typography.Heading>
 
-      <Typography.Paragraph className="font-normal text-center text-muted">
+      <Typography.Paragraph color="muted" className="text-center">
         Choose how you'd like to begin your journey with SocietyHub.
       </Typography.Paragraph>
 
@@ -26,13 +26,13 @@ export default function SetupScreen() {
 
             <Card.Body className="flex-1 min-w-0">
               <Card.Title>
-                <Text className="text-base font-serif-medium">Create a Society</Text>
+                <Typography.Heading type="h5">Create a Society</Typography.Heading>
               </Card.Title>
 
               <Card.Description>
-                <Text className="text-sm font-regular text-muted">
+                <Typography.Paragraph color="muted" type="body-sm">
                   Become the administrator of a new society.
-                </Text>
+                </Typography.Paragraph>
               </Card.Description>
             </Card.Body>
 
@@ -53,13 +53,13 @@ export default function SetupScreen() {
 
             <Card.Body className="flex-1 min-w-0">
               <Card.Title>
-                <Text className="text-base font-serif-medium">Join a Society</Text>
+                <Typography.Heading type="h5">Join a Society</Typography.Heading>
               </Card.Title>
 
               <Card.Description>
-                <Text className="text-sm font-regular text-muted">
+                <Typography.Paragraph color="muted" type="body-sm">
                   Join an existing society using a unique code.
-                </Text>
+                </Typography.Paragraph>
               </Card.Description>
             </Card.Body>
 

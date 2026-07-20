@@ -93,7 +93,7 @@ export default function Join() {
           Join Society
         </Typography.Heading>
 
-        <Typography.Paragraph className="font-normal text-center text-muted">
+        <Typography.Paragraph color="muted" className="text-center">
           Enter your society details to send a request to the administrator.
         </Typography.Paragraph>
 
