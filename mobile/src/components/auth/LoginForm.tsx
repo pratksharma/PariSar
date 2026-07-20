@@ -5,21 +5,26 @@ import {
   FieldError,
   Input,
   Label,
+  Spinner,
   TextField,
   useThemeColor,
   useToast,
 } from "heroui-native";
 import { useAuthStore } from "@/stores/authStore";
 import Lucide from "@react-native-vector-icons/lucide";
+import { FadeIn } from "react-native-reanimated";
 
 export default function LoginForm() {
   const login = useAuthStore((state) => state.login);
+  const loading = useAuthStore((state) => state.loading);
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const [identifierError, setIdentifierError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+
+  const [background] = useThemeColor(["background"]);
 
   const { toast } = useToast();
   const [success, danger] = useThemeColor(["success", "danger"]);
@@ -96,7 +101,9 @@ export default function LoginForm() {
         <FieldError>{passwordError}</FieldError>
       </TextField>
 
-      <Button onPress={handleLogin}>Login</Button>
+      <Button onPress={handleLogin}>
+        {loading ? <Spinner entering={FadeIn.delay(50)} color={background} /> : "Login"}
+      </Button>
     </View>
   );
 }

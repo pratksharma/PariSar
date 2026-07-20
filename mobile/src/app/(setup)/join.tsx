@@ -1,29 +1,46 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { Button, FieldError, Input, Label, TextField, Typography } from "heroui-native";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+  Typography,
+  useThemeColor,
+  useToast,
+} from "heroui-native";
+import { FadeIn } from "react-native-reanimated";
+import { useSocietyStore } from "@/stores/societyStore";
+import Lucide from "@react-native-vector-icons/lucide";
 
 export default function Join() {
-  const [societyCode, setSocietyCode] = useState("");
+  const joinSociety = useSocietyStore((s) => s.joinSociety);
+  const loading = useSocietyStore((s) => s.loading);
+
+  const [uniqueCode, setUniqueCode] = useState("");
   const [tower, setTower] = useState("");
   const [flatNumber, setFlatNumber] = useState("");
 
   const [errors, setErrors] = useState({
-    societyCode: "",
+    uniqueCode: "",
     tower: "",
     flatNumber: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const [success, danger, background] = useThemeColor(["success", "danger", "background"]);
 
   const validate = () => {
     const newErrors = {
-      societyCode: "",
+      uniqueCode: "",
       tower: "",
       flatNumber: "",
     };
 
-    if (!societyCode.trim()) {
-      newErrors.societyCode = "Society code is required.";
+    if (!uniqueCode.trim()) {
+      newErrors.uniqueCode = "Society code is required.";
     }
 
     if (!tower.trim()) {
@@ -42,17 +59,27 @@ export default function Join() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    setLoading(true);
-
     try {
-      // TODO: Call join society API
-      console.log({
-        societyCode,
+      await joinSociety({
+        uniqueCode,
         tower,
         flatNumber,
       });
-    } finally {
-      setLoading(false);
+
+      toast.show({
+        variant: "success",
+        label: "Request sent",
+        description: "Your request has been sent to the society administrator for approval.",
+        icon: <Lucide name="shield-check" size={24} color={success} />,
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.show({
+        variant: "danger",
+        label: "Request failed",
+        description: err?.response?.data?.message ?? err.message,
+        icon: <Lucide name="shield-alert" size={24} color={danger} />,
+      });
     }
   };
 
@@ -71,18 +98,18 @@ export default function Join() {
         </Typography.Paragraph>
 
         <View className="mt-4 gap-5">
-          <TextField isRequired isInvalid={!!errors.societyCode}>
+          <TextField isRequired isInvalid={!!errors.uniqueCode}>
             <Label>Society Code</Label>
 
             <Input
-              value={societyCode}
-              onChangeText={(text) => setSocietyCode(text.toUpperCase())}
+              value={uniqueCode}
+              onChangeText={(text) => setUniqueCode(text.toUpperCase())}
               placeholder="ABC123"
               autoCapitalize="characters"
               autoCorrect={false}
             />
 
-            <FieldError>{errors.societyCode}</FieldError>
+            <FieldError>{errors.uniqueCode}</FieldError>
           </TextField>
 
           <TextField isRequired isInvalid={!!errors.tower}>
@@ -112,7 +139,7 @@ export default function Join() {
           </TextField>
 
           <Button className="w-full mt-2" onPress={handleSubmit}>
-            Send Request
+            {loading ? <Spinner entering={FadeIn.delay(50)} color={background} /> : "Send Request"}
           </Button>
         </View>
       </ScrollView>

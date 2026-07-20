@@ -5,21 +5,26 @@ import {
   FieldError,
   Input,
   Label,
+  Spinner,
   TextField,
   useThemeColor,
   useToast,
 } from "heroui-native";
 import { useAuthStore } from "@/stores/authStore";
 import Lucide from "@react-native-vector-icons/lucide";
+import { FadeIn } from "react-native-reanimated";
 
 export default function RegisterForm() {
-  const { register } = useAuthStore();
+  const register = useAuthStore((state) => state.register);
+  const loading = useAuthStore((state) => state.loading);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [background] = useThemeColor(["background"]);
 
   const { toast } = useToast();
   const [success, danger] = useThemeColor(["success", "danger"]);
@@ -78,7 +83,6 @@ export default function RegisterForm() {
         icon: <Lucide name="shield-check" size={24} color={success} />,
       });
     } catch (err: any) {
-      console.log(err.response?.data);
       if (err?.response?.data?.field == "email") {
         setErrors((prev) => ({
           ...prev,
@@ -169,7 +173,9 @@ export default function RegisterForm() {
         <FieldError>{errors.confirmPassword}</FieldError>
       </TextField>
 
-      <Button onPress={handleRegister}>Create Account</Button>
+      <Button onPress={handleRegister}>
+        {loading ? <Spinner entering={FadeIn.delay(50)} color={background} /> : "Create Account"}
+      </Button>
     </View>
   );
 }

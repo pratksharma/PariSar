@@ -1,31 +1,9 @@
-import { useAuthStore } from "@/stores/authStore";
-import Lucide from "@react-native-vector-icons/lucide";
-import { Button, useToast } from "heroui-native";
 import { StyleSheet, Text, ScrollView, View } from "react-native";
 
 const Home = () => {
-  const logout = useAuthStore((state) => state.logout);
-  const { toast } = useToast();
-
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View className="p-4 pt-24">
-        <Text>Home</Text>
-        <Button
-          onPress={async () => {
-            await logout();
-
-            toast.show({
-              variant: "default",
-              label: "Signed out",
-              description: "You have been logged out.",
-              icon: <Lucide name="circle-check" size={24} />,
-            });
-          }}
-        >
-          Logout
-        </Button>
-
+      <View className="p-4 pt-25">
         <Text>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vitae urna ac lorem varius
           placerat. Maecenas ac elit nec sem interdum tempus. Sed varius tellus nec ipsum varius,

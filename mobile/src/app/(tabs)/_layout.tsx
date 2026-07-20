@@ -2,8 +2,10 @@ import { Tabs } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Lucide from "@react-native-vector-icons/lucide";
 import { Image } from "react-native";
+import { useAuthStore } from "../../stores/authStore";
 
 export default function TabLayout() {
+  const user = useAuthStore((s) => s.user);
   return (
     <Tabs
       screenOptions={{
@@ -11,8 +13,12 @@ export default function TabLayout() {
         headerBackground: () => {
           return (
             <LinearGradient
-              colors={["rgba(245, 245, 245, 0.9)", "transparent"]}
-              className="h-[150%]"
+              colors={[
+                "rgba(245, 245, 245, 0.9)",
+                "rgba(245, 245, 245, 0.7)",
+                "rgba(245, 245, 245, 0)",
+              ]}
+              className="h-full"
             />
           );
         },
@@ -25,7 +31,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "PariSar",
+          title: user ? `Hello, ${user.name}` : "PariSar",
+          tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => {
             return <Lucide name="house" size={size} color={color} />;
           },

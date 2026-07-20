@@ -17,7 +17,6 @@ type PreferencesStore = {
   hydrate: () => Promise<void>;
   setOnboarded: (value: boolean) => Promise<void>;
   setTheme: (theme: ThemePreference) => Promise<void>;
-  resetOnboarding: () => Promise<void>;
 };
 
 const defaultPreferences: Preferences = {
@@ -69,16 +68,6 @@ export const usePreferencesStore = create<PreferencesStore>((set, get) => ({
     const preferences = {
       ...get().preferences,
       theme,
-    };
-
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-
-    set({ preferences });
-  },
-  resetOnboarding: async () => {
-    const preferences = {
-      ...get().preferences,
-      onboarded: false,
     };
 
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));

@@ -1,18 +1,37 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
-import { Button, TextField, Label, Input, TextArea, FieldError, Typography } from "heroui-native";
+import {
+  Button,
+  TextField,
+  Label,
+  Input,
+  TextArea,
+  FieldError,
+  Typography,
+  useThemeColor,
+  Spinner,
+} from "heroui-native";
+import { FadeIn } from "react-native-reanimated";
+import { useSocietyStore } from "@/stores/societyStore";
+import { useToast } from "heroui-native";
+import Lucide from "@react-native-vector-icons/lucide";
 
 export default function Create() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
 
+  const createSociety = useSocietyStore((s) => s.createSociety);
+  const loading = useSocietyStore((s) => s.loading);
+
+  const { toast } = useToast();
+
+  const [success, danger, background] = useThemeColor(["success", "danger", "background"]);
+
   const [errors, setErrors] = useState({
     name: "",
     address: "",
   });
-
-  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const newErrors = {
@@ -31,27 +50,32 @@ export default function Create() {
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    setLoading(true);
-
     try {
-      // TODO: Call your create society API
-      console.log({
+      await createSociety({
         name,
         address,
         description,
       });
-    } finally {
-      setLoading(false);
+
+      toast.show({
+        variant: "success",
+        label: "Society created",
+        description: "Your society has been created successfully. You're now the administrator.",
+        icon: <Lucide name="shield-check" size={24} color={success} />,
+      });
+    } catch (err: any) {
+      toast.show({
+        variant: "danger",
+        label: "Creation failed",
+        description: err?.response?.data?.message ?? err.message,
+        icon: <Lucide name="shield-alert" size={24} color={danger} />,
+      });
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      // className="flex-1"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView
-        // className="flex-1"
         contentContainerClassName="px-4 pt-32 pb-4 gap-4"
         keyboardShouldPersistTaps="handled"
       >
@@ -97,7 +121,11 @@ export default function Create() {
           </TextField>
 
           <Button className="w-full mt-2" onPress={handleSubmit}>
-            Create Society
+            {loading ? (
+              <Spinner entering={FadeIn.delay(50)} color={background} />
+            ) : (
+              "Create Society"
+            )}
           </Button>
         </View>
       </ScrollView>

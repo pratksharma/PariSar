@@ -9,8 +9,12 @@ export default function AuthLayout() {
         headerBackground: () => {
           return (
             <LinearGradient
-              colors={["rgba(245, 245, 245, 0.9)", "transparent"]}
-              className="h-[150%]"
+              colors={[
+                "rgba(245, 245, 245, 0.9)",
+                "rgba(245, 245, 245, 0.7)",
+                "rgba(245, 245, 245, 0)",
+              ]}
+              className="h-full"
             />
           );
         },
@@ -20,7 +24,7 @@ export default function AuthLayout() {
         },
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Auth" }} />
+      <Stack.Screen name="index" options={{ title: "" }} />
     </Stack>
   );
 }

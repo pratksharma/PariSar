@@ -30,7 +30,7 @@ export default function SetupScreen() {
               </Card.Title>
 
               <Card.Description>
-                <Text className="text-sm text-muted">
+                <Text className="text-sm font-regular text-muted">
                   Become the administrator of a new society.
                 </Text>
               </Card.Description>
@@ -57,7 +57,7 @@ export default function SetupScreen() {
               </Card.Title>
 
               <Card.Description>
-                <Text className="text-sm text-muted">
+                <Text className="text-sm font-regular text-muted">
                   Join an existing society using a unique code.
                 </Text>
               </Card.Description>
