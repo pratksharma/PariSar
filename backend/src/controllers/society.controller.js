@@ -86,22 +86,6 @@ export const getMySociety = asyncHandler(async (req, res) => {
     })
 })
 
-export const getSociety = asyncHandler(async (req, res) => {
-    const { societyId } = req.params;
-
-    const society = await Society.findById(societyId).populate("admin");
-
-    if (!society) {
-        throw new ApiError(404, "Society not found");
-    }
-
-    res.status(200).json({
-        success: true,
-        message: "Society data fetched successfully",
-        data: society
-    })
-})
-
 export const updateSociety = asyncHandler(async (req, res) => {
     const { name, address, description } = req.body;
 
@@ -484,3 +468,19 @@ export const acceptGuardInvite = asyncHandler(async (req, res) => {
         message: "Joined society as a guard successfully.",
     });
 });
+
+export const getSociety = asyncHandler(async (req, res) => {
+    const { societyId } = req.params;
+
+    const society = await Society.findById(societyId).populate("admin");
+
+    if (!society) {
+        throw new ApiError(404, "Society not found");
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Society data fetched successfully",
+        data: society
+    })
+})

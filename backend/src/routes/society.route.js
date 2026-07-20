@@ -6,7 +6,6 @@ const societyRouter = Router();
 
 societyRouter.post("/create", authMiddleware, createSociety)
 societyRouter.get("/my", authMiddleware, getMySociety)
-societyRouter.get("/:societyId", getSociety)
 societyRouter.patch("/update", authMiddleware, updateSociety)
 societyRouter.delete("/delete", authMiddleware, deleteSociety)
 societyRouter.post("/join", authMiddleware, joinSociety)
@@ -17,5 +16,6 @@ societyRouter.delete("/remove/:userId", authMiddleware, removeMember)
 societyRouter.get("/members", authMiddleware, getAllMembers)
 societyRouter.post("/invite-guard", authMiddleware, inviteGuard);
 societyRouter.post("/accept-guard-invite", authMiddleware, acceptGuardInvite);
+societyRouter.get("/:societyId", getSociety)
 
 export default societyRouter;
