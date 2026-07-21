@@ -3,7 +3,7 @@ import { StyleSheet, Text, ScrollView, View } from "react-native";
 const Home = () => {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <View className="p-4 pt-25">
+      <View className="px-4 py-25">
         <Text className="font-normal">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi vitae urna ac lorem varius
           placerat. Maecenas ac elit nec sem interdum tempus. Sed varius tellus nec ipsum varius,

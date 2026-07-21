@@ -3,11 +3,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import Lucide from "@react-native-vector-icons/lucide";
 import { Image } from "react-native";
 import { useAuthStore } from "../../stores/authStore";
+import TabBar from "@/components/ui/TabBar";
+import { useThemeColor } from "heroui-native";
 
 export default function TabLayout() {
+  const [muted] = useThemeColor(["muted"]);
   const user = useAuthStore((s) => s.user);
   return (
     <Tabs
+      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerTransparent: true,
         headerBackground: () => {
@@ -26,6 +30,7 @@ export default function TabLayout() {
           fontFamily: "SourceSerif4_500Medium",
           fontSize: 24,
         },
+        tabBarInactiveTintColor: muted,
       }}
     >
       <Tabs.Screen
@@ -60,16 +65,11 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ focused, color, size }) => {
-            return focused ? (
+          tabBarIcon: () => {
+            return (
               <Image
                 source={require("@/assets/profile-icon.png")}
-                className="h-6 w-6 rounded-full outline-2 outline-muted"
-              />
-            ) : (
-              <Image
-                source={require("@/assets/profile-icon.png")}
-                className="h-6 w-6 rounded-full"
+                className="h-5 w-5 rounded-full"
               />
             );
           },

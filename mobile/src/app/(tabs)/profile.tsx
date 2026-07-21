@@ -29,7 +29,7 @@ export default function Profile() {
   return (
     <ScrollView
       className="flex-1"
-      contentContainerClassName="px-4 pt-24 pb-8 gap-5"
+      contentContainerClassName="px-4 py-25 gap-5"
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
