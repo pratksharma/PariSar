@@ -30,6 +30,8 @@ export interface User {
   phone: string;
   role: UserRole;
   approvalStatus: ApprovalStatus;
+  tower?: string;
+  flatNumber?: string;
   society?: Society;
   createdAt: string;
   updatedAt: string;

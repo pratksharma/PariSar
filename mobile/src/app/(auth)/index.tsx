@@ -49,12 +49,6 @@ export default function AuthScreen() {
                 </Tabs.Content>
               </Tabs>
             </View>
-
-            <Description className="mt-8 text-center text-xs text-muted">
-              By continuing you agree to our{" "}
-              <Description className="text-primary text-xs font-bold">Terms</Description> and{" "}
-              <Description className="text-primary text-xs font-bold">Privacy Policy</Description>.
-            </Description>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

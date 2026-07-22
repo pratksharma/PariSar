@@ -9,9 +9,15 @@ import {
   useFonts,
   SourceSerif4_500Medium,
   SourceSerif4_500Medium_Italic,
+  Outfit_100Thin,
+  Outfit_200ExtraLight,
+  Outfit_300Light,
   Outfit_400Regular,
   Outfit_500Medium,
-  DMSans_700Bold,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+  Outfit_800ExtraBold,
+  Outfit_900Black,
 } from "@expo-google-fonts/dev";
 
 import "../global.css";
@@ -31,9 +37,15 @@ export default function RootLayout(): JSX.Element {
   const [fontsLoaded] = useFonts({
     SourceSerif4_500Medium,
     SourceSerif4_500Medium_Italic,
+    Outfit_100Thin,
+    Outfit_200ExtraLight,
+    Outfit_300Light,
     Outfit_400Regular,
     Outfit_500Medium,
-    DMSans_700Bold,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
+    Outfit_800ExtraBold,
+    Outfit_900Black,
   });
 
   const hydrate = usePreferencesStore((s) => s.hydrate);
