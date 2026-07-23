@@ -8,8 +8,14 @@ export const api = axios.create({
   baseURL: API_URL,
 });
 
+let refreshPromise: Promise<string> | null = null;
+
 api.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync("accessToken");
+  let token = useAuthStore.getState().accessToken;
+
+  if (!token) {
+    token = await SecureStore.getItemAsync("accessToken");
+  }
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -28,26 +34,37 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = await SecureStore.getItemAsync("refreshToken");
+        if (!refreshPromise) {
+          refreshPromise = (async () => {
+            const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
-        const res = await axios.post(`${API_URL}/auth/refresh-access-token`, { refreshToken });
+            if (!refreshToken) {
+              throw new Error("No refresh token");
+            }
 
-        const accessToken = res.data.data.accessToken;
+            const res = await axios.post(`${API_URL}/auth/refresh-access-token`, { refreshToken });
 
-        useAuthStore.setState({
-          accessToken,
-        });
+            const accessToken = res.data.data.accessToken;
+
+            await SecureStore.setItemAsync("accessToken", accessToken);
+
+            useAuthStore.setState({
+              accessToken,
+            });
+
+            return accessToken;
+          })().finally(() => {
+            refreshPromise = null;
+          });
+        }
+
+        const accessToken = await refreshPromise;
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
         return api(originalRequest);
       } catch {
-        await SecureStore.deleteItemAsync("refreshToken");
-
-        useAuthStore.setState({
-          user: null,
-          accessToken: null,
-        });
+        await useAuthStore.getState().logout();
       }
     }
 
