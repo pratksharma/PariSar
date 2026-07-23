@@ -1,9 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
-import React from "react";
 
 const Notices = () => {
   return (
-    <View>
+    <View className="px-4 py-25">
       <Text>Notices</Text>
     </View>
   );

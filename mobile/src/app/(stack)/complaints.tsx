@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
 
-const Visitors = () => {
+const Complaints = () => {
   return (
     <View className="px-4 py-25">
-      <Text>Visitors</Text>
+      <Text>Complaints</Text>
     </View>
   );
 };
 
-export default Visitors;
+export default Complaints;
 
 const styles = StyleSheet.create({});

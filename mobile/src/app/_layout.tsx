@@ -98,6 +98,10 @@ export default function RootLayout(): JSX.Element {
           <Stack.Protected guard={isReady}>
             <Stack.Screen name="(tabs)" />
           </Stack.Protected>
+
+          <Stack.Protected guard={isReady}>
+            <Stack.Screen name="(stack)" />
+          </Stack.Protected>
         </Stack>
 
         <StatusBar style="auto" />
