@@ -7,6 +7,7 @@ import visitorRouter from "./src/routes/visitor.routes.js";
 import noticeRouter from "./src/routes/notice.route.js";
 import complaintRouter from "./src/routes/complaints.route.js";
 import complaintsRouter from "./src/routes/complaints.route.js";
+import amenitiesRouter from "./src/routes/amenities.route.js";
 
 const app = express();
 app.use(express.json());
@@ -19,6 +20,7 @@ app.use("/api/society", societyRouter)
 app.use("/api/visitor", visitorRouter)
 app.use("/api/notice", noticeRouter)
 app.use("/api/complaints", complaintsRouter)
+app.use("/api/amenities", amenitiesRouter)
 
 app.use(errorHandler)
 export default app;
