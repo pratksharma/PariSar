@@ -8,7 +8,7 @@ export const api = axios.create({
   baseURL: API_URL,
 });
 
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 api.interceptors.request.use(async (config) => {
   let token = useAuthStore.getState().accessToken;
@@ -30,41 +30,38 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (
+      originalRequest?.url?.includes("/auth/refresh-access-token") ||
+      originalRequest?.url?.includes("/auth/logout")
+    ) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         if (!refreshPromise) {
-          refreshPromise = (async () => {
-            const refreshToken = await SecureStore.getItemAsync("refreshToken");
-
-            if (!refreshToken) {
-              throw new Error("No refresh token");
-            }
-
-            const res = await axios.post(`${API_URL}/auth/refresh-access-token`, { refreshToken });
-
-            const accessToken = res.data.data.accessToken;
-
-            await SecureStore.setItemAsync("accessToken", accessToken);
-
-            useAuthStore.setState({
-              accessToken,
+          refreshPromise = useAuthStore
+            .getState()
+            .refreshAccessToken()
+            .finally(() => {
+              refreshPromise = null;
             });
-
-            return accessToken;
-          })().finally(() => {
-            refreshPromise = null;
-          });
         }
 
         const accessToken = await refreshPromise;
 
+        if (!accessToken) {
+          return Promise.reject(error);
+        }
+
+        originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
         return api(originalRequest);
       } catch {
-        await useAuthStore.getState().logout();
+        return Promise.reject(error);
       }
     }
 

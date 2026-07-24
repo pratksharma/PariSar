@@ -57,7 +57,7 @@ interface AuthState {
 
   getUser: () => Promise<void>;
 
-  refreshAccessToken: () => Promise<boolean>;
+  refreshAccessToken: () => Promise<string | null>;
 
   initialize: () => Promise<void>;
 }
@@ -121,11 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const token = get().accessToken || (await SecureStore.getItemAsync(ACCESS_TOKEN_KEY));
 
       if (token) {
-        await api.get("/auth/logout", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await api.get("/auth/logout");
       }
     } catch {}
 
@@ -143,11 +139,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (!token) return;
 
-    const res = await api.get("/auth/get-user", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await api.get("/auth/get-user");
 
     set({
       user: res.data.user,
@@ -158,24 +150,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
 
-      if (!refreshToken) return false;
+      if (!refreshToken) return null;
 
       const res = await api.post("/auth/refresh-access-token", {
         refreshToken,
       });
 
-      const accessToken = res.data.data.accessToken;
+      const { accessToken, refreshToken: newRefreshToken } = res.data;
 
       await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
+      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, newRefreshToken);
 
-      set({
-        accessToken,
-      });
+      set({ accessToken });
 
-      return true;
+      return accessToken;
     } catch {
       await get().logout();
-      return false;
+      return null;
     }
   },
 
