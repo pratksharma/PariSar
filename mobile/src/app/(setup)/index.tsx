@@ -5,7 +5,7 @@ import { Text, View } from "react-native";
 
 export default function SetupScreen() {
   return (
-    <View className="flex-1 items-center gap-4 bg-background px-6 pt-32 pb-4">
+    <View className="flex-1 items-center gap-4 bg-background px-6 pt-28 pb-4">
       <Typography.Heading type="h2" className="font-serif-medium text-center">
         Let's get you settled
       </Typography.Heading>

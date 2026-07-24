@@ -86,7 +86,7 @@ export default function Join() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView
-        contentContainerClassName="px-4 pt-32 pb-4 gap-4"
+        contentContainerClassName="px-4 pt-28 pb-4 gap-4"
         keyboardShouldPersistTaps="handled"
       >
         <Typography.Heading type="h2" className="font-serif-medium text-center">

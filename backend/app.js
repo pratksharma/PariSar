@@ -5,7 +5,6 @@ import authRouter from "./src/routes/auth.route.js";
 import societyRouter from "./src/routes/society.route.js";
 import visitorRouter from "./src/routes/visitor.routes.js";
 import noticeRouter from "./src/routes/notice.route.js";
-import complaintRouter from "./src/routes/complaints.route.js";
 import complaintsRouter from "./src/routes/complaints.route.js";
 import amenitiesRouter from "./src/routes/amenities.route.js";
 

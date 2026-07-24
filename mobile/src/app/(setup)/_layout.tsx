@@ -24,9 +24,10 @@ export default function SetupLayout() {
         },
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Home", headerShown: false }} />
+      <Stack.Screen name="index" options={{ title: "Society Setup", headerShown: false }} />
       <Stack.Screen name="join" options={{ title: "Join" }} />
       <Stack.Screen name="create" options={{ title: "Create" }} />
+      <Stack.Screen name="complete-residence" options={{ title: "Residence Details" }} />
     </Stack>
   );
 }

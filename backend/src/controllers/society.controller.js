@@ -18,14 +18,23 @@ const generateSocietyCode = async () => {
 };
 
 export const createSociety = asyncHandler(async (req, res) => {
-    const { name, address, description } = req.body;
+    const {
+        name,
+        address,
+        description,
+        tower,
+        flatNumber,
+    } = req.body;
 
-    if (!name || !address) {
-        throw new ApiError(400, "Name and address are required");
+    if (!name || !address || !tower || !flatNumber) {
+        throw new ApiError(
+            400,
+            "Name, address, tower and flat number are required"
+        );
     }
 
     const existingSociety = await Society.findOne({
-        name: { $regex: new RegExp(`^${name.trim()}$`, "i") }
+        name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
     });
 
     if (existingSociety) {
@@ -45,9 +54,9 @@ export const createSociety = asyncHandler(async (req, res) => {
     const uniqueCode = await generateSocietyCode();
 
     const society = await Society.create({
-        name,
-        address,
-        description,
+        name: name.trim(),
+        address: address.trim(),
+        description: description?.trim(),
         uniqueCode,
         admin: user._id,
         totalResidents: 1,
@@ -56,6 +65,8 @@ export const createSociety = asyncHandler(async (req, res) => {
     user.role = "admin";
     user.society = society._id;
     user.approvalStatus = "APPROVED";
+    user.tower = tower.trim();
+    user.flatNumber = flatNumber.trim();
 
     await user.save();
 

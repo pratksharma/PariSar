@@ -49,10 +49,11 @@ export default function Profile() {
 
         <View className="items-center gap-2">
           <Typography.Heading type="h3">{user.name}</Typography.Heading>
-
-          <Chip variant="secondary" color={roleColor}>
-            <Chip.Label className="uppercase">{user.role}</Chip.Label>
-          </Chip>
+          <View>
+            <Chip variant="secondary" color={roleColor}>
+              <Chip.Label className="uppercase">{user.role}</Chip.Label>
+            </Chip>
+          </View>
         </View>
       </View>
 

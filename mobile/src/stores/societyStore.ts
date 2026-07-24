@@ -13,6 +13,8 @@ interface CreateSocietyData {
   name: string;
   address: string;
   description: string;
+  tower: string;
+  flatNumber: string;
 }
 
 interface JoinSocietyData {

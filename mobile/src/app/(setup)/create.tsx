@@ -20,6 +20,8 @@ export default function Create() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
+  const [tower, setTower] = useState("");
+  const [flatNumber, setFlatNumber] = useState("");
 
   const createSociety = useSocietyStore((s) => s.createSociety);
   const loading = useSocietyStore((s) => s.loading);
@@ -31,16 +33,25 @@ export default function Create() {
   const [errors, setErrors] = useState({
     name: "",
     address: "",
+    description: "",
+    tower: "",
+    flatNumber: "",
   });
 
   const validate = () => {
     const newErrors = {
       name: "",
       address: "",
+      description: "",
+      tower: "",
+      flatNumber: "",
     };
 
     if (!name.trim()) newErrors.name = "Society name is required.";
     if (!address.trim()) newErrors.address = "Address is required.";
+    if (!description.trim()) newErrors.description = "Description is required.";
+    if (!tower.trim()) newErrors.tower = "Tower is required.";
+    if (!flatNumber.trim()) newErrors.flatNumber = "Flat number is required.";
 
     setErrors(newErrors);
 
@@ -55,6 +66,8 @@ export default function Create() {
         name,
         address,
         description,
+        tower,
+        flatNumber,
       });
 
       toast.show({
@@ -76,7 +89,7 @@ export default function Create() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView
-        contentContainerClassName="px-4 pt-32 pb-4 gap-4"
+        contentContainerClassName="px-4 pt-28 pb-4 gap-4"
         keyboardShouldPersistTaps="handled"
       >
         <Typography.Heading type="h2" className="font-serif-medium text-center">
@@ -109,7 +122,34 @@ export default function Create() {
             <FieldError>{errors.address}</FieldError>
           </TextField>
 
-          <TextField isInvalid={!!errors.address}>
+          <View className="flex-row gap-4">
+            <View className="flex-1">
+              <TextField isRequired isInvalid={!!errors.tower}>
+                <Label>Tower</Label>
+
+                <Input
+                  value={tower}
+                  onChangeText={setTower}
+                  placeholder="A"
+                  autoCapitalize="characters"
+                />
+
+                <FieldError>{errors.tower}</FieldError>
+              </TextField>
+            </View>
+
+            <View className="flex-1">
+              <TextField isRequired isInvalid={!!errors.flatNumber}>
+                <Label>Flat Number</Label>
+
+                <Input value={flatNumber} onChangeText={setFlatNumber} placeholder="302" />
+
+                <FieldError>{errors.flatNumber}</FieldError>
+              </TextField>
+            </View>
+          </View>
+
+          <TextField isInvalid={!!errors.description}>
             <Label>Description</Label>
 
             <TextArea
@@ -118,6 +158,7 @@ export default function Create() {
               placeholder="Enter a description"
               numberOfLines={6}
             />
+            <FieldError>{errors.description}</FieldError>
           </TextField>
 
           <Button className="w-full mt-2" onPress={handleSubmit}>

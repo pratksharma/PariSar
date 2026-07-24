@@ -26,6 +26,7 @@ export default function StackLayout() {
     >
       <Stack.Screen name="amenities" options={{ title: "Amenities" }} />
       <Stack.Screen name="complaints" options={{ title: "Complaints" }} />
+      <Stack.Screen name="society" options={{ title: "Society" }} />
     </Stack>
   );
 }
