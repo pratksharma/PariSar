@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import { Button, Card, Chip, Separator, Typography, useToast } from "heroui-native";
+import { Button, Card, Chip, Separator, Typography, useThemeColor, useToast } from "heroui-native";
 import Lucide from "@react-native-vector-icons/lucide";
 
 import { api } from "@/lib/api";
@@ -16,6 +16,8 @@ const Society = () => {
   const society = user?.society;
   const isAdmin = user?.role === "admin";
   const { toast } = useToast();
+
+  const [accentSoftForeground] = useThemeColor(["accent-soft-foreground"]);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -122,7 +124,7 @@ const Society = () => {
             <Card.Title>Guard Invitations</Card.Title>
 
             <Button variant="secondary" onPress={() => router.push("/(stack)/invite-guard")}>
-              <Lucide name="shield-plus" size={18} />
+              <Lucide name="shield-plus" size={18} color={accentSoftForeground} />
               <Button.Label>Invite Guard</Button.Label>
             </Button>
 
@@ -244,7 +246,7 @@ const Society = () => {
       ) : null}
 
       <Button variant="secondary" onPress={refresh}>
-        <Lucide name="refresh-cw" size={18} />
+        <Lucide name="refresh-cw" size={18} color={accentSoftForeground} />
         <Button.Label>{refreshing ? "Refreshing..." : "Refresh Society"}</Button.Label>
       </Button>
     </ScrollView>

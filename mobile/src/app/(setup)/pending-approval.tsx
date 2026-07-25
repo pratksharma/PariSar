@@ -31,7 +31,7 @@ export default function PendingApproval() {
               });
             }}
           >
-            <Lucide name="refresh-cw" size={18} />
+            <Lucide name="refresh-cw" size={18} color="white" />
             <Button.Label>Refresh Status</Button.Label>
           </Button>
 

@@ -36,9 +36,14 @@ export default function GuardRegisterForm() {
   const [verifyingCode, setVerifyingCode] = useState(false);
   const [verifiedInvite, setVerifiedInvite] = useState<VerifiedGuardInvite | null>(null);
 
-  const [background, muted] = useThemeColor(["background", "muted"]);
+  const [background, muted, success, danger, accentSoftForeground] = useThemeColor([
+    "background",
+    "muted",
+    "success",
+    "danger",
+    "accent-soft-foreground",
+  ]);
   const { toast } = useToast();
-  const [success, danger] = useThemeColor(["success", "danger"]);
 
   const [errors, setErrors] = useState({
     name: "",
@@ -164,7 +169,7 @@ export default function GuardRegisterForm() {
             {verifyingCode ? (
               <Spinner size="sm" />
             ) : (
-              <Lucide name="search-check" size={16} />
+              <Lucide name="search-check" size={16} color={accentSoftForeground} />
             )}
             <Button.Label>Verify</Button.Label>
           </Button>
@@ -232,7 +237,11 @@ export default function GuardRegisterForm() {
             returnKeyType="next"
           />
           <InputGroup.Suffix>
-            <Pressable onPress={() => setShowPassword((prev) => !prev)} hitSlop={10} className="p-1">
+            <Pressable
+              onPress={() => setShowPassword((prev) => !prev)}
+              hitSlop={10}
+              className="p-1"
+            >
               <Lucide name={showPassword ? "eye-off" : "eye"} size={20} color={muted} />
             </Pressable>
           </InputGroup.Suffix>
@@ -252,7 +261,11 @@ export default function GuardRegisterForm() {
             onSubmitEditing={handleRegister}
           />
           <InputGroup.Suffix>
-            <Pressable onPress={() => setShowConfirmPassword((prev) => !prev)} hitSlop={10} className="p-1">
+            <Pressable
+              onPress={() => setShowConfirmPassword((prev) => !prev)}
+              hitSlop={10}
+              className="p-1"
+            >
               <Lucide name={showConfirmPassword ? "eye-off" : "eye"} size={20} color={muted} />
             </Pressable>
           </InputGroup.Suffix>

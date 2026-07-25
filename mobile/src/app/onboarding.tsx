@@ -7,7 +7,7 @@ import { usePreferencesStore } from "@/stores/preferences.store";
 
 const Onboarding = () => {
   const insets = useSafeAreaInsets();
-  const [themeBg, text] = useThemeColor(["background", "default"]);
+  const [themeBg, accentForeground] = useThemeColor(["background", "accent-foreground"]);
 
   const setOnboarded = usePreferencesStore((state) => state.setOnboarded);
 
@@ -29,27 +29,30 @@ const Onboarding = () => {
           className="absolute bottom-0 left-0 right-0 h-50"
         />
       </View>
-      <View className="flex-1 p-4 gap-4">
-        <Typography.Heading type="h2" align="center" className="font-serif-medium">
-          Connected{" "}
-          <Typography.Heading type="h2" className="font-serif-medium-italic">
-            Communities
-          </Typography.Heading>{" "}
-          Effortless, Daily Living
-        </Typography.Heading>
-        <Typography.Paragraph align="center" className="font-normal" color="muted">
-          Manage visitors, stay updated with notices, raise complaints, and connect with your
-          community—all from one secure and easy-to-use app.
-        </Typography.Paragraph>
+      <View className="flex-1 p-4 gap-4 justify-between">
+        <View className="gap-4">
+          <Typography.Heading type="h2" align="center" className="font-serif-medium">
+            Connected{" "}
+            <Typography.Heading type="h2" className="font-serif-medium-italic">
+              Communities
+            </Typography.Heading>{" "}
+            Effortless, Daily Living
+          </Typography.Heading>
+          <Typography.Paragraph align="center" className="font-normal" color="muted">
+            Manage visitors, stay updated with notices, raise complaints, and connect with your
+            community—all from one secure and easy-to-use app.
+          </Typography.Paragraph>
+        </View>
         <Button
-          className="m-auto"
+          size="lg"
+          className="self-center px-8"
           feedbackVariant="scale-ripple"
           onPress={async () => {
             await finish();
           }}
         >
-          <Button.Label>Get Started</Button.Label>
-          <Lucide name="chevron-right" color={text} size={20} />
+          <Button.Label className="py-1">Get Started</Button.Label>
+          <Lucide name="chevron-right" color={accentForeground} size={20} />
         </Button>
       </View>
     </View>

@@ -19,7 +19,7 @@ export default function GuardPortalScreen() {
           <View className="flex-1 px-6 pt-16 pb-8">
             <View className="mt-8 items-center gap-2">
               <View className="h-14 w-14 items-center justify-center rounded-2xl bg-warning/10 text-warning">
-                <Lucide name="shield-check" size={30} />
+                <Lucide name="shield-check" size={30} color="white" />
               </View>
 
               <Typography.Heading className="text-3xl font-serif-medium text-center">
