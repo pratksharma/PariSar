@@ -6,21 +6,56 @@ PariSar is a modern society management platform that streamlines communication, 
 
 This repository serves as the **workspace** for the PariSar project and contains both the mobile application and the backend as separate projects.
 
+## Screenshots
+
+<p align="center">
+  <img src="./public/preview/onboarding-screen.jpg" width="30%" alt="Onboarding Screen" />
+  <img src="./public/preview/home-screen.jpg" width="30%" alt="Home Screen" />
+  <img src="./public/preview/profile-screen.jpg" width="30%" alt="Profile Screen" />
+</p>
+
+<p align="center">
+  <a href="./public/preview">View more screenshots →</a>
+</p>
+
 ## Project Structure
 
 ```text
 .
-├── backend/          # Express.js backend API
-├── mobile/           # Expo + React Native mobile application
-└── README.md
+├── backend/                  # Node.js & Express API server
+│   ├── src/
+│   │   ├── config/           # Database & environment configurations
+│   │   ├── controllers/      # API route handlers & logic
+│   │   ├── middlewares/      # Auth & request middlewares
+│   │   ├── models/           # Mongoose schemas & data models
+│   │   ├── routes/           # API route definitions
+│   │   └── utils/            # Shared helper functions
+│   ├── app.js                # Express application setup
+│   ├── server.js             # Server entry point
+│   └── package.json
+│
+├── mobile/                   # Expo & React Native application
+│   ├── assets/               # App icons, splash screens & static assets
+│   ├── src/
+│   │   ├── app/              # Expo Router file-based screens & routes
+│   │   ├── components/       # Reusable UI components
+│   │   ├── lib/              # API hooks & helper utilities
+│   │   └── stores/           # Global state management
+│   ├── app.json              # Expo application configuration
+│   └── package.json
+│
+├── public/                   # Media & documentation assets
+│   ├── banner.png            # Repository banner image
+│   └── preview/              # Application preview screenshots
+└── README.MD                 # Project workspace documentation
 ```
 
 ## Projects
 
-- 📱 **[Mobile Application](./mobile)** — Expo + React Native client
-- ⚙️ **[Backend API](./backend)** — Express.js + MongoDB server
+- **[Mobile Application](./mobile)** — Expo + React Native client
+- **[Backend API](./backend)** — Express.js + MongoDB server
 
-### 📱 Mobile ([`/mobile`](./mobile))
+### Mobile ([`/mobile`](./mobile))
 
 The React Native application built with Expo.
 
@@ -30,8 +65,7 @@ The React Native application built with Expo.
 - Expo
 - TypeScript
 - Expo Router
-- React Query
-- Firebase Cloud Messaging (via backend)
+- Zustand
 
 **Responsibilities**
 
@@ -46,7 +80,7 @@ The React Native application built with Expo.
 
 ---
 
-### ⚙️ Backend ([`/backend`](./backend))
+### Backend ([`/backend`](./backend))
 
 REST API powering the PariSar mobile application.
 
@@ -56,7 +90,6 @@ REST API powering the PariSar mobile application.
 - Express.js
 - MongoDB
 - Mongoose
-- Firebase Admin SDK
 - JWT Authentication
 
 **Responsibilities**
@@ -66,8 +99,6 @@ REST API powering the PariSar mobile application.
 - Visitor approval workflow
 - Complaint management
 - Notice management
-- Push notification delivery
-- File uploads
 - Business logic
 
 ---
