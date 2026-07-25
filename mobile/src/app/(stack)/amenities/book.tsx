@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Button,
   FieldError,
@@ -18,6 +18,7 @@ import Lucide from "@react-native-vector-icons/lucide";
 import DateTimeField from "@/components/ui/DateTimeField";
 
 export default function BookAmenity() {
+  const router = useRouter();
   const { amenityId } = useLocalSearchParams<{ amenityId: string }>();
 
   const bookAmenity = useAmenitiesStore((s) => s.bookAmenity);
@@ -69,6 +70,8 @@ export default function BookAmenity() {
         description: "Your amenity booking request has been submitted.",
         icon: <Lucide name="check-circle-2" size={24} color={success} />,
       });
+
+      router.back();
     } catch (err: any) {
       toast.show({
         variant: "danger",

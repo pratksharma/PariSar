@@ -4,6 +4,7 @@ import {
   Button,
   FieldError,
   Input,
+  InputGroup,
   Label,
   Spinner,
   TextField,
@@ -22,11 +23,12 @@ export default function LoginForm() {
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [identifierError, setIdentifierError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const [background] = useThemeColor(["background"]);
+  const [background, muted] = useThemeColor(["background", "muted"]);
 
   const { toast } = useToast();
   const [success, danger] = useThemeColor(["success", "danger"]);
@@ -91,14 +93,21 @@ export default function LoginForm() {
       <TextField isRequired isInvalid={!!passwordError}>
         <Label>Password</Label>
 
-        <Input
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          returnKeyType="done"
-          onSubmitEditing={handleLogin}
-        />
+        <InputGroup>
+          <InputGroup.Input
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+          />
+          <InputGroup.Suffix>
+            <Pressable onPress={() => setShowPassword((prev) => !prev)} hitSlop={10} className="p-1">
+              <Lucide name={showPassword ? "eye-off" : "eye"} size={20} color={muted} />
+            </Pressable>
+          </InputGroup.Suffix>
+        </InputGroup>
 
         <FieldError>{passwordError}</FieldError>
       </TextField>

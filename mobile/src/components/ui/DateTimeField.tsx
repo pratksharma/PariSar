@@ -65,7 +65,7 @@ export default function DateTimeField({
             value={dateValue}
             mode={mode}
             display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={(_, selected) => {
+            onValueChange={(_, selected) => {
               if (!selected) return;
 
               onChange(mode === "date" ? formatDate(selected) : formatTime(selected));
@@ -74,6 +74,7 @@ export default function DateTimeField({
                 setOpen(false);
               }
             }}
+            onDismiss={() => setOpen(false)}
           />
 
           {Platform.OS === "ios" ? (

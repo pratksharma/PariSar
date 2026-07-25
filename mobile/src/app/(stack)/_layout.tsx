@@ -29,6 +29,8 @@ export default function StackLayout() {
       <Stack.Screen name="visitor-create" options={{ title: "Add Visitor" }} />
       <Stack.Screen name="invite-guard" options={{ title: "Invite Guard" }} />
       <Stack.Screen name="complaints" options={{ title: "Complaints" }} />
+      <Stack.Screen name="complaint-create" options={{ title: "Raise Complaint" }} />
+      <Stack.Screen name="notice-create" options={{ title: "Notice Form" }} />
       <Stack.Screen name="society" options={{ title: "Society" }} />
     </Stack>
   );

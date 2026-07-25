@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import {
   Button,
   Card,
   Chip,
   FieldError,
   Input,
+  InputGroup,
   Label,
   Spinner,
   TextField,
@@ -29,10 +30,13 @@ export default function GuardRegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [verifyingCode, setVerifyingCode] = useState(false);
   const [verifiedInvite, setVerifiedInvite] = useState<VerifiedGuardInvite | null>(null);
 
-  const [background] = useThemeColor(["background"]);
+  const [background, muted] = useThemeColor(["background", "muted"]);
   const { toast } = useToast();
   const [success, danger] = useThemeColor(["success", "danger"]);
 
@@ -219,26 +223,40 @@ export default function GuardRegisterForm() {
 
       <TextField isRequired isInvalid={!!errors.password}>
         <Label>Password</Label>
-        <Input
-          placeholder="Create a password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          returnKeyType="next"
-        />
+        <InputGroup>
+          <InputGroup.Input
+            placeholder="Create a password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            returnKeyType="next"
+          />
+          <InputGroup.Suffix>
+            <Pressable onPress={() => setShowPassword((prev) => !prev)} hitSlop={10} className="p-1">
+              <Lucide name={showPassword ? "eye-off" : "eye"} size={20} color={muted} />
+            </Pressable>
+          </InputGroup.Suffix>
+        </InputGroup>
         <FieldError>{errors.password}</FieldError>
       </TextField>
 
       <TextField isRequired isInvalid={!!errors.confirmPassword}>
         <Label>Confirm Password</Label>
-        <Input
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          returnKeyType="done"
-          onSubmitEditing={handleRegister}
-        />
+        <InputGroup>
+          <InputGroup.Input
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!showConfirmPassword}
+            returnKeyType="done"
+            onSubmitEditing={handleRegister}
+          />
+          <InputGroup.Suffix>
+            <Pressable onPress={() => setShowConfirmPassword((prev) => !prev)} hitSlop={10} className="p-1">
+              <Lucide name={showConfirmPassword ? "eye-off" : "eye"} size={20} color={muted} />
+            </Pressable>
+          </InputGroup.Suffix>
+        </InputGroup>
         <FieldError>{errors.confirmPassword}</FieldError>
       </TextField>
 

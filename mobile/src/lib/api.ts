@@ -1,4 +1,3 @@
-import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
@@ -11,6 +10,7 @@ export const api = axios.create({
 let refreshPromise: Promise<string | null> | null = null;
 
 api.interceptors.request.use(async (config) => {
+  const { useAuthStore } = require("@/stores/authStore");
   let token = useAuthStore.getState().accessToken;
 
   if (!token) {
@@ -42,6 +42,7 @@ api.interceptors.response.use(
 
       try {
         if (!refreshPromise) {
+          const { useAuthStore } = require("@/stores/authStore");
           refreshPromise = useAuthStore
             .getState()
             .refreshAccessToken()

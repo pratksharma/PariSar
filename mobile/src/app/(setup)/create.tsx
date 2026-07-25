@@ -15,6 +15,7 @@ import { FadeIn } from "react-native-reanimated";
 import { useSocietyStore } from "@/stores/societyStore";
 import { useToast } from "heroui-native";
 import Lucide from "@react-native-vector-icons/lucide";
+import { useAmenitiesStore } from "@/stores/amenitiesStore";
 
 export default function Create() {
   const [name, setName] = useState("");
@@ -25,6 +26,8 @@ export default function Create() {
 
   const createSociety = useSocietyStore((s) => s.createSociety);
   const loading = useSocietyStore((s) => s.loading);
+
+  const populateAmenities = useAmenitiesStore((s) => s.populateAmenities);
 
   const { toast } = useToast();
 
@@ -69,6 +72,8 @@ export default function Create() {
         tower,
         flatNumber,
       });
+
+      await populateAmenities();
 
       toast.show({
         variant: "success",
