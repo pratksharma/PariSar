@@ -5,6 +5,7 @@ export default function SetupLayout() {
   return (
     <Stack
       screenOptions={{
+        animation: "simple_push",
         headerTransparent: true,
         headerBackground: () => {
           return (

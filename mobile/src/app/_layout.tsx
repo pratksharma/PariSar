@@ -65,8 +65,13 @@ export default function RootLayout(): JSX.Element {
     !!user.society &&
     user.approvalStatus !== "APPROVED" &&
     user.role === "resident";
-  const needsSetup = onboarded && !!user && user.role !== "guard" && (!user.society || needsApproval);
-  const isReady = onboarded && !!user && !!user.society && (user.role === "guard" || user.approvalStatus === "APPROVED");
+  const needsSetup =
+    onboarded && !!user && user.role !== "guard" && (!user.society || needsApproval);
+  const isReady =
+    onboarded &&
+    !!user &&
+    !!user.society &&
+    (user.role === "guard" || user.approvalStatus === "APPROVED");
 
   useEffect(() => {
     hydrate();
@@ -88,7 +93,7 @@ export default function RootLayout(): JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider config={config}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, animation: "simple_push" }}>
           <Stack.Protected guard={isOnboarding}>
             <Stack.Screen name="onboarding" />
           </Stack.Protected>

@@ -16,6 +16,7 @@ export default function AuthLayout() {
   return (
     <Stack
       screenOptions={{
+        animation: "simple_push",
         headerTransparent: true,
         headerBackground: () => (
           <LinearGradient
