@@ -9,6 +9,7 @@ import { useThemeColor } from "heroui-native";
 export default function TabLayout() {
   const [muted] = useThemeColor(["muted"]);
   const user = useAuthStore((s) => s.user);
+  const isGuard = user?.role === "guard";
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} />}

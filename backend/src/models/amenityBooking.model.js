@@ -23,6 +23,7 @@ const AmenityBookingSchema = new mongoose.Schema(
         bookingDate: {
             type: Date,
             required: true,
+            default: Date.now
         },
 
         startTime: {
@@ -33,12 +34,6 @@ const AmenityBookingSchema = new mongoose.Schema(
         endTime: {
             type: String, // HH:mm
             required: true,
-        },
-
-        purpose: {
-            type: String,
-            trim: true,
-            default: "",
         },
 
         status: {

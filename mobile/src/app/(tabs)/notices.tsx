@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RefreshControl, FlatList, View, ScrollView } from "react-native";
+import { RefreshControl, FlatList, ScrollView, View } from "react-native";
 import {
   Button,
   Card,
@@ -14,36 +14,33 @@ import {
   useToast,
   useThemeColor,
 } from "heroui-native";
+import Lucide from "@react-native-vector-icons/lucide";
 
 import { useNoticeStore, type NoticeTag } from "@/stores/noticeStore";
 import { useAuthStore } from "@/stores/authStore";
-import Lucide from "@react-native-vector-icons/lucide";
 
-const Notices = () => {
-  const { user } = useAuthStore();
+import { BottomSheetInput, BottomSheetTextArea } from "@/components/ui/BottomSheetInputs";
+
+export default function Notices() {
+  const user = useAuthStore((s) => s.user);
 
   const notices = useNoticeStore((s) => s.notices);
   const loading = useNoticeStore((s) => s.loading);
   const getNotices = useNoticeStore((s) => s.getNotices);
   const deleteNotice = useNoticeStore((s) => s.deleteNotice);
   const createNotice = useNoticeStore((s) => s.createNotice);
+  const updateNotice = useNoticeStore((s) => s.updateNotice);
 
   const [refreshing, setRefreshing] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tag, setTag] = useState<NoticeTag>("general");
-
-  const updateNotice = useNoticeStore((s) => s.updateNotice);
   const [editingNoticeId, setEditingNoticeId] = useState<string | null>(null);
   const isEditing = editingNoticeId !== null;
 
   const { toast } = useToast();
-  const [success, danger, accentSoftForeground] = useThemeColor([
-    "success",
-    "danger",
-    "accent-soft-foreground",
-  ]);
+  const [success, danger] = useThemeColor(["success", "danger"]);
 
   const isAdmin = user?.role === "admin";
 
@@ -53,7 +50,6 @@ const Notices = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-
     try {
       await getNotices();
     } finally {
@@ -61,20 +57,11 @@ const Notices = () => {
     }
   };
 
-  if (loading && notices.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <Spinner />
-      </View>
-    );
-  }
-
   const openEditSheet = (notice: (typeof notices)[number]) => {
     setEditingNoticeId(notice._id);
     setTitle(notice.title);
     setDescription(notice.description);
     setTag(notice.tag);
-
     setIsOpen(true);
   };
 
@@ -86,7 +73,14 @@ const Notices = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim()) return;
+    if (!title.trim() || !description.trim()) {
+      toast.show({
+        variant: "danger",
+        label: "Validation Error",
+        description: "Title and description are required.",
+      });
+      return;
+    }
 
     try {
       if (isEditing) {
@@ -100,7 +94,6 @@ const Notices = () => {
           variant: "success",
           label: "Notice Updated",
           description: "The notice has been updated successfully.",
-          icon: <Lucide name="square-pen" size={24} color={success} />,
         });
       } else {
         await createNotice({
@@ -113,7 +106,6 @@ const Notices = () => {
           variant: "success",
           label: "Notice Published",
           description: "Your notice has been shared with all residents.",
-          icon: <Lucide name="megaphone" size={24} color={success} />,
         });
       }
 
@@ -124,114 +116,148 @@ const Notices = () => {
         variant: "danger",
         label: isEditing ? "Couldn't Update Notice" : "Couldn't Publish Notice",
         description: err?.response?.data?.message ?? "Something went wrong. Please try again.",
-        icon: <Lucide name="triangle-alert" size={24} color={danger} />,
       });
     }
   };
 
+  if (loading && notices.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Spinner />
+      </View>
+    );
+  }
+
   return (
-    <>
-      {isAdmin && (
-        <>
-          <Button
-            isIconOnly
-            className="absolute bottom-24 right-6 z-50 h-14 w-14 rounded-full"
-            onPress={() => {
-              resetForm();
-              setIsOpen(true);
-            }}
-          >
-            <Lucide name="plus" size={24} color="white" />
-          </Button>
-          <BottomSheet isOpen={isOpen} onOpenChange={setIsOpen}>
-            <BottomSheet.Portal>
-              <BottomSheet.Overlay />
-
-              <BottomSheet.Content keyboardBehavior="extend">
-                <BottomSheet.Title>
-                  <Typography.Heading type="h3">
-                    {isEditing ? "Update Notice" : "Create Notice"}
-                  </Typography.Heading>
-                </BottomSheet.Title>
-
-                <BottomSheet.Description className="mb-5">
-                  {isEditing
-                    ? "Update the notice details."
-                    : "This notice will be visible to all residents."}
-                </BottomSheet.Description>
-
-                <View className="gap-4">
-                  <View>
-                    <Label>Title</Label>
-                    <Input
-                      value={title}
-                      onChangeText={setTitle}
-                      placeholder="Enter notice title"
-                      className="bg-surface-tertiary"
-                    />
-                  </View>
-
-                  <View>
-                    <Label>Description</Label>
-
-                    <TextArea
-                      value={description}
-                      onChangeText={setDescription}
-                      numberOfLines={5}
-                      placeholder="Enter notice description"
-                      className="bg-surface-tertiary"
-                    />
-                  </View>
-
-                  <View className="gap-2">
-                    <Label>Tag</Label>
-
-                    <View className="flex-row flex-wrap gap-2">
-                      {[
-                        "general",
-                        "maintenance",
-                        "security",
-                        "event",
-                        "emergency",
-                        "meeting",
-                        "payment",
-                        "other",
-                      ].map((item) => (
-                        <Chip
-                          key={item}
-                          variant={tag === item ? "primary" : "secondary"}
-                          onPress={() => setTag(item as NoticeTag)}
-                        >
-                          {item.charAt(0).toUpperCase() + item.slice(1)}
-                        </Chip>
-                      ))}
-                    </View>
-                  </View>
-
-                  <Button onPress={handleSubmit}>
-                    {isEditing ? "Save Changes" : "Publish Notice"}
-                  </Button>
-                </View>
-              </BottomSheet.Content>
-            </BottomSheet.Portal>
-          </BottomSheet>
-        </>
-      )}
+    <View className="flex-1 bg-background">
       <FlatList
         data={notices}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingVertical: 100,
+          paddingTop: 100,
+          paddingBottom: 100,
           gap: 14,
         }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListHeaderComponent={() => (
+          <View className="mb-2">
+            <BottomSheet isOpen={isOpen} onOpenChange={setIsOpen}>
+              <View className="flex-row items-center justify-between gap-3 mb-2">
+                {notices.length > 0 ? (
+                  <Typography.Paragraph color="muted" className="flex-1">
+                    Society announcements and official updates.
+                  </Typography.Paragraph>
+                ) : (
+                  <View className="flex-1" />
+                )}
+
+                {isAdmin ? (
+                  <BottomSheet.Trigger asChild>
+                    <Button onPress={resetForm}>
+                      <Lucide name="plus" size={18} color="white" />
+                      <Button.Label>Add Notice</Button.Label>
+                    </Button>
+                  </BottomSheet.Trigger>
+                ) : null}
+              </View>
+
+              <BottomSheet.Portal>
+                <BottomSheet.Overlay />
+                <BottomSheet.Content keyboardBehavior="extend">
+                  <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerClassName="gap-4 pb-4"
+                  >
+                    <View className="mb-2 gap-1">
+                      <BottomSheet.Title>
+                        <Typography.Heading type="h3">
+                          {isEditing ? "Update Notice" : "Create Notice"}
+                        </Typography.Heading>
+                      </BottomSheet.Title>
+                      <BottomSheet.Description>
+                        {isEditing
+                          ? "Update the details of this notice."
+                          : "Publish an announcement to all society residents."}
+                      </BottomSheet.Description>
+                    </View>
+
+                    <View className="gap-1.5">
+                      <Label>Title</Label>
+                      <BottomSheetInput
+                        value={title}
+                        onChangeText={setTitle}
+                        placeholder="Enter notice title"
+                        className="bg-background-secondary"
+                        returnKeyType="next"
+                      />
+                    </View>
+
+                    <View className="gap-1.5">
+                      <Label>Description</Label>
+                      <BottomSheetTextArea
+                        value={description}
+                        onChangeText={setDescription}
+                        numberOfLines={4}
+                        placeholder="Enter notice description"
+                        className="bg-background-secondary"
+                      />
+                    </View>
+
+                    <View className="gap-2">
+                      <Label>Category Tag</Label>
+                      <View className="flex-row flex-wrap gap-2">
+                        {[
+                          "general",
+                          "maintenance",
+                          "security",
+                          "event",
+                          "emergency",
+                          "meeting",
+                          "payment",
+                          "other",
+                        ].map((item) => (
+                          <Chip
+                            key={item}
+                            variant={tag === item ? "primary" : "secondary"}
+                            onPress={() => setTag(item as NoticeTag)}
+                          >
+                            <Chip.Label className="capitalize">{item}</Chip.Label>
+                          </Chip>
+                        ))}
+                      </View>
+                    </View>
+
+                    <View className="gap-3 mt-3">
+                      <Button onPress={handleSubmit}>
+                        <Button.Label>{isEditing ? "Save Changes" : "Publish Notice"}</Button.Label>
+                      </Button>
+
+                      <Button
+                        variant="tertiary"
+                        onPress={() => {
+                          resetForm();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <Button.Label>Cancel</Button.Label>
+                      </Button>
+                    </View>
+                  </ScrollView>
+                </BottomSheet.Content>
+              </BottomSheet.Portal>
+            </BottomSheet>
+          </View>
+        )}
         ListEmptyComponent={() => (
-          <View className="flex-1 items-center justify-center">
-            <Typography.Heading className="text-xl font-semibold">No Notices</Typography.Heading>
-            <Typography.Paragraph className="text-center opacity-60 mt-2">
-              There are no notices issued yet.
+          <View className="flex-1 items-center justify-center py-12">
+            <Typography.Heading type="h4" className="font-medium">
+              No Notices Yet
+            </Typography.Heading>
+            <Typography.Paragraph color="muted" className="text-center mt-1">
+              There are no notices issued for your society.
             </Typography.Paragraph>
           </View>
         )}
@@ -239,21 +265,22 @@ const Notices = () => {
           <Card>
             <Card.Body className="gap-3">
               <View className="flex-row justify-between items-start">
-                <Typography className="text-lg font-semibold flex-1 mr-3">{item.title}</Typography>
+                <Typography.Heading type="h5" className="flex-1 mr-3">
+                  {item.title}
+                </Typography.Heading>
                 <Chip
                   size="md"
                   variant="secondary"
-                  color={item.tag == "emergency" ? "danger" : "default"}
+                  color={item.tag === "emergency" ? "danger" : "default"}
                 >
-                  {item.tag.charAt(0).toUpperCase() + item.tag.slice(1)}
+                  <Chip.Label className="capitalize">{item.tag}</Chip.Label>
                 </Chip>
               </View>
 
               <Typography.Paragraph>{item.description}</Typography.Paragraph>
 
-              <Description className="text-xs text-muted">
-                Issued by{" "}
-                <Typography.Paragraph type="body-xs">{item.issuedBy.name}</Typography.Paragraph> on{" "}
+              <Description className="text-xs color-muted">
+                Issued by {item.issuedBy?.name ?? "Admin"} on{" "}
                 {new Date(item.createdAt).toLocaleDateString()}
               </Description>
 
@@ -265,7 +292,7 @@ const Notices = () => {
                     variant="secondary"
                     onPress={() => openEditSheet(item)}
                   >
-                    <Lucide name="clipboard-pen" size={16} color={accentSoftForeground} />
+                    <Lucide name="clipboard-pen" size={16} />
                     <Button.Label>Edit</Button.Label>
                   </Button>
 
@@ -284,8 +311,6 @@ const Notices = () => {
           </Card>
         )}
       />
-    </>
+    </View>
   );
-};
-
-export default Notices;
+}

@@ -1,9 +1,24 @@
 import Lucide from "@react-native-vector-icons/lucide";
 import { router } from "expo-router";
 import { Card, PressableFeedback, Typography } from "heroui-native";
+import { useEffect } from "react";
 import { Text, View } from "react-native";
 
+import { useAuthStore } from "@/stores/authStore";
+
 export default function SetupScreen() {
+  const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    if (user?.society && user.approvalStatus !== "APPROVED" && user.role === "resident") {
+      router.replace("/(setup)/pending-approval");
+    }
+  }, [user]);
+
+  if (user?.society && user.approvalStatus !== "APPROVED" && user.role === "resident") {
+    return null;
+  }
+
   return (
     <View className="flex-1 items-center gap-4 bg-background px-6 pt-28 pb-4">
       <Typography.Heading type="h2" className="font-serif-medium text-center">

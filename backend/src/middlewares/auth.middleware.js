@@ -1,6 +1,5 @@
 import User from "../models/user.model.js";
 import { verifyAccessToken } from "../utils/accessToken.js";
-import { verifyRefreshToken } from "../utils/refreshToken.js";
 
 const authMiddleware = async (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
@@ -13,7 +12,7 @@ const authMiddleware = async (req, res, next) => {
 
     try {
         let decoded = verifyAccessToken(token);
-        let user = await User.findById(decoded.id)
+        let user = await User.findById(decoded.id);
 
         if (!user) {
             return res.status(404).json({ message: "User not found!" });
@@ -28,6 +27,22 @@ const authMiddleware = async (req, res, next) => {
             error: error.message,
         });
     }
-}
+};
+
+export const optionalAuthMiddleware = async (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return next();
+
+    try {
+        let decoded = verifyAccessToken(token);
+        let user = await User.findById(decoded.id);
+        if (user) {
+            req.user = user;
+        }
+        next();
+    } catch {
+        next();
+    }
+};
 
 export default authMiddleware;

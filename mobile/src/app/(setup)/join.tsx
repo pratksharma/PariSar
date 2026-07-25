@@ -89,10 +89,6 @@ export default function Join() {
         contentContainerClassName="px-4 pt-28 pb-4 gap-4"
         keyboardShouldPersistTaps="handled"
       >
-        <Typography.Heading type="h2" className="font-serif-medium text-center">
-          Join Society
-        </Typography.Heading>
-
         <Typography.Paragraph color="muted" className="text-center">
           Enter your society details to send a request to the administrator.
         </Typography.Paragraph>

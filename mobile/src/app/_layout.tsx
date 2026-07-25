@@ -58,9 +58,15 @@ export default function RootLayout(): JSX.Element {
   const user = useAuthStore((s) => s.user);
 
   const isOnboarding = !onboarded;
-  const isLoggedOut = onboarded && !user;
-  const needsSociety = onboarded && !!user && !user.society;
-  const isReady = onboarded && !!user && !!user.society;
+  const isLoggedOut = onboarded && (!user || (user.role === "guard" && !user.society));
+  const needsApproval =
+    onboarded &&
+    !!user &&
+    !!user.society &&
+    user.approvalStatus !== "APPROVED" &&
+    user.role === "resident";
+  const needsSetup = onboarded && !!user && user.role !== "guard" && (!user.society || needsApproval);
+  const isReady = onboarded && !!user && !!user.society && (user.role === "guard" || user.approvalStatus === "APPROVED");
 
   useEffect(() => {
     hydrate();
@@ -91,7 +97,7 @@ export default function RootLayout(): JSX.Element {
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
 
-          <Stack.Protected guard={needsSociety}>
+          <Stack.Protected guard={needsSetup}>
             <Stack.Screen name="(setup)" />
           </Stack.Protected>
 

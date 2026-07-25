@@ -8,16 +8,16 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: [true, "Email must be unique"]
+        unique: true
     },
     phone: {
         type: String,
         required: true,
-        unique: [true, "Phone number must be unique"]
+        unique: true
     },
     role: {
         type: String,
-        enum: ['resident', 'gaurd', 'admin'],
+        enum: ['resident', 'guard', 'admin'],
         default: "resident",
         required: true
     },

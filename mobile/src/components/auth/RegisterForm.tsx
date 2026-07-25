@@ -174,7 +174,11 @@ export default function RegisterForm() {
       </TextField>
 
       <Button onPress={handleRegister}>
-        {loading ? <Spinner entering={FadeIn.delay(50)} color={background} /> : "Create Account"}
+        {loading ? (
+          <Spinner entering={FadeIn.delay(50)} color={background} />
+        ) : (
+          <Button.Label>Create Account</Button.Label>
+        )}
       </Button>
     </View>
   );

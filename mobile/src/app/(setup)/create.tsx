@@ -92,10 +92,6 @@ export default function Create() {
         contentContainerClassName="px-4 pt-28 pb-4 gap-4"
         keyboardShouldPersistTaps="handled"
       >
-        <Typography.Heading type="h2" className="font-serif-medium text-center">
-          Create Society
-        </Typography.Heading>
-
         <Typography.Paragraph color="muted" className="text-center">
           Create your society to become its administrator.
         </Typography.Paragraph>

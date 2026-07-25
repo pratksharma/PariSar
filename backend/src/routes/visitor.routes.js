@@ -4,12 +4,13 @@ import { approveVisitor, createPreApprovedVisitor, createVisitor, getVisitors, m
 
 const visitorRouter = Router();
 
-visitorRouter.get("/", getVisitors);
-visitorRouter.post("/create", createVisitor);
-visitorRouter.post("/pre-approvals", createPreApprovedVisitor);
-visitorRouter.patch("/entries/:entryId/approve", approveVisitor);
-visitorRouter.patch("/entries/:entryId/reject", rejectVisitor);
-visitorRouter.patch("/entries/:entryId/check-in", markVisitorEntry);
-visitorRouter.patch("/entries/:entryId/check-out", markVisitorExit);
+visitorRouter.get("/", authMiddleware, getVisitors);
+visitorRouter.post("/create", authMiddleware, createVisitor);
+visitorRouter.post("/pre-approvals", authMiddleware, createPreApprovedVisitor);
+visitorRouter.patch("/entries/:entryId/approve", authMiddleware, approveVisitor);
+visitorRouter.patch("/entries/:entryId/reject", authMiddleware, rejectVisitor);
+visitorRouter.patch("/entries/:entryId/check-in", authMiddleware, markVisitorEntry);
+visitorRouter.patch("/entries/check-in", authMiddleware, markVisitorEntry);
+visitorRouter.patch("/entries/:entryId/check-out", authMiddleware, markVisitorExit);
 
 export default visitorRouter;

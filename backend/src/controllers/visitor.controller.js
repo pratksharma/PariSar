@@ -5,8 +5,34 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import crypto from "crypto";
 
+const getSocietyId = (user) => user?.society?._id || user?.society;
+
+const buildScanQuery = (req, guard) => {
+    const societyId = getSocietyId(guard);
+
+    if (req.body?.qrToken) {
+        return {
+            qrToken: String(req.body.qrToken).trim(),
+            society: societyId,
+        };
+    }
+
+    return {
+        _id: req.params.entryId,
+        society: societyId,
+    };
+};
+
 export const getVisitors = asyncHandler(async (req, res) => {
     const user = req.user;
+
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
+    }
+
+    if (!user.society) {
+        throw new ApiError(400, "User is not associated with any society.");
+    }
 
     const query = {
         society: user.society,
@@ -43,26 +69,34 @@ export const createVisitor = asyncHandler(async (req, res) => {
         remarks,
     } = req.body;
 
-    const guard = req.user;
+    const user = req.user;
 
-    if (guard.role !== "guard") {
-        throw new ApiError(403, "Only guards can create visitor entries.");
+    if (!["guard", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only guards and admins can create visitor entries.");
     }
 
-    if (!guard.society) {
-        throw new ApiError(400, "Guard is not assigned to any society.");
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your account must be approved first.");
     }
 
-    const resident = await User.findOne({
-        society: guard.society,
+    if (!user.society) {
+        throw new ApiError(400, "User is not assigned to any society.");
+    }
+
+    let resident = await User.findOne({
+        society: user.society,
         tower,
         flatNumber,
         role: "resident",
-        isVerified: true,
+        approvalStatus: "APPROVED",
     });
 
+    if (!resident && user.role === "admin") {
+        resident = user;
+    }
+
     if (!resident) {
-        throw new ApiError(404, "Resident not found.");
+        throw new ApiError(404, `No approved resident found in Tower ${tower}, Flat ${flatNumber}.`);
     }
 
     let visitor = await Visitor.findOne({ phone });
@@ -76,11 +110,10 @@ export const createVisitor = asyncHandler(async (req, res) => {
     }
 
     const visitorEntry = await VisitorEntry.create({
-        society: guard.society,
+        society: getSocietyId(user),
         visitor: visitor._id,
         resident: resident._id,
-
-        createdByGuard: guard._id,
+        createdByGuard: user._id,
 
         purpose,
         type,
@@ -88,7 +121,9 @@ export const createVisitor = asyncHandler(async (req, res) => {
         flatNumber,
         remarks,
 
-        status: "pending",
+        status: user.role === "admin" ? "approved" : "pending",
+        approvedBy: user.role === "admin" ? user._id : undefined,
+        qrToken: null,
     });
 
     const populatedEntry = await VisitorEntry.findById(visitorEntry._id)
@@ -109,19 +144,28 @@ export const createPreApprovedVisitor = asyncHandler(async (req, res) => {
         vehicleNumber,
         purpose,
         type,
+        tower,
+        flatNumber,
         remarks,
         expectedAt,
     } = req.body;
 
-    const resident = req.user;
+    const user = req.user;
 
-    if (resident.role !== "resident") {
-        throw new ApiError(403, "Only residents can pre-approve visitors.");
+    if (!["resident", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only residents and admins can pre-approve visitors.");
     }
 
-    if (!resident.society) {
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
+    }
+
+    if (!user.society) {
         throw new ApiError(400, "You are not associated with any society.");
     }
+
+    const targetTower = tower || user.tower || "Main";
+    const targetFlat = flatNumber || user.flatNumber || "Admin";
 
     let visitor = await Visitor.findOne({ phone });
 
@@ -134,15 +178,15 @@ export const createPreApprovedVisitor = asyncHandler(async (req, res) => {
     }
 
     const visitorEntry = await VisitorEntry.create({
-        society: resident.society,
+        society: user.society,
         visitor: visitor._id,
-        resident: resident._id,
-        approvedBy: resident._id,
+        resident: user._id,
+        approvedBy: user._id,
 
         purpose,
         type,
-        tower: resident.tower,
-        flatNumber: resident.flatNumber,
+        tower: targetTower,
+        flatNumber: targetFlat,
         remarks,
         expectedAt,
 
@@ -163,11 +207,14 @@ export const createPreApprovedVisitor = asyncHandler(async (req, res) => {
 
 export const approveVisitor = asyncHandler(async (req, res) => {
     const { entryId } = req.params;
+    const user = req.user;
 
-    const resident = req.user;
+    if (!["resident", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only residents and admins can approve visitors.");
+    }
 
-    if (resident.role !== "resident") {
-        throw new ApiError(403, "Only residents can approve visitors.");
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
     }
 
     const visitorEntry = await VisitorEntry.findById(entryId);
@@ -176,7 +223,7 @@ export const approveVisitor = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Visitor entry not found.");
     }
 
-    if (!visitorEntry.resident.equals(resident._id)) {
+    if (user.role === "resident" && !visitorEntry.resident.equals(user._id)) {
         throw new ApiError(
             403,
             "You are not authorized to approve this visitor."
@@ -191,26 +238,35 @@ export const approveVisitor = asyncHandler(async (req, res) => {
     }
 
     visitorEntry.status = "approved";
-    visitorEntry.approvedBy = resident._id;
+    visitorEntry.approvedBy = user._id;
     visitorEntry.qrToken = crypto.randomUUID();
     visitorEntry.qrUsed = false;
 
     await visitorEntry.save();
 
+    const populatedEntry = await VisitorEntry.findById(visitorEntry._id)
+        .populate("visitor")
+        .populate("resident", "name phone tower flatNumber")
+        .populate("createdByGuard", "name")
+        .populate("approvedBy", "name");
+
     res.status(200).json({
         success: true,
         message: "Visitor approved successfully.",
-        visitorEntry,
+        visitorEntry: populatedEntry,
     });
 });
 
 export const rejectVisitor = asyncHandler(async (req, res) => {
     const { entryId } = req.params;
+    const user = req.user;
 
-    const resident = req.user;
+    if (!["resident", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only residents and admins can reject visitors.");
+    }
 
-    if (resident.role !== "resident") {
-        throw new ApiError(403, "Only residents can reject visitors.");
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
     }
 
     const visitorEntry = await VisitorEntry.findById(entryId);
@@ -219,7 +275,7 @@ export const rejectVisitor = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Visitor entry not found.");
     }
 
-    if (!visitorEntry.resident.equals(resident._id)) {
+    if (user.role === "resident" && !visitorEntry.resident.equals(user._id)) {
         throw new ApiError(
             403,
             "You are not authorized to reject this visitor."
@@ -234,37 +290,38 @@ export const rejectVisitor = asyncHandler(async (req, res) => {
     }
 
     visitorEntry.status = "rejected";
-    visitorEntry.approvedBy = resident._id;
+    visitorEntry.approvedBy = user._id;
 
     await visitorEntry.save();
+
+    const populatedRejectedEntry = await VisitorEntry.findById(visitorEntry._id)
+        .populate("visitor")
+        .populate("resident", "name phone tower flatNumber")
+        .populate("createdByGuard", "name")
+        .populate("approvedBy", "name");
 
     res.status(200).json({
         success: true,
         message: "Visitor rejected successfully.",
-        visitorEntry,
+        visitorEntry: populatedRejectedEntry,
     });
 });
 
 export const markVisitorEntry = asyncHandler(async (req, res) => {
-    const { entryId } = req.params;
+    const user = req.user;
 
-    const guard = req.user;
-
-    if (guard.role !== "guard") {
-        throw new ApiError(403, "Only guards can mark visitor entry.");
+    if (!["guard", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only guards and admins can mark visitor entry.");
     }
 
-    const visitorEntry = await VisitorEntry.findById(entryId);
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your account must be approved first.");
+    }
+
+    const visitorEntry = await VisitorEntry.findOne(buildScanQuery(req, user));
 
     if (!visitorEntry) {
         throw new ApiError(404, "Visitor entry not found.");
-    }
-
-    if (!visitorEntry.society.equals(guard.society)) {
-        throw new ApiError(
-            403,
-            "You are not authorized to access this visitor."
-        );
     }
 
     if (visitorEntry.status !== "approved") {
@@ -274,25 +331,39 @@ export const markVisitorEntry = asyncHandler(async (req, res) => {
         );
     }
 
+    if (visitorEntry.qrUsed) {
+        throw new ApiError(400, "This visitor QR code has already been used.");
+    }
+
     visitorEntry.status = "checked_in";
     visitorEntry.checkedInAt = new Date();
+    visitorEntry.qrUsed = true;
 
     await visitorEntry.save();
+
+    const populatedEntry = await VisitorEntry.findById(visitorEntry._id)
+        .populate("visitor")
+        .populate("resident", "name phone tower flatNumber")
+        .populate("createdByGuard", "name")
+        .populate("approvedBy", "name");
 
     res.status(200).json({
         success: true,
         message: "Visitor checked in successfully.",
-        visitorEntry,
+        visitorEntry: populatedEntry,
     });
 });
 
 export const markVisitorExit = asyncHandler(async (req, res) => {
     const { entryId } = req.params;
+    const user = req.user;
 
-    const guard = req.user;
+    if (!["guard", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only guards and admins can mark visitor exit.");
+    }
 
-    if (guard.role !== "guard") {
-        throw new ApiError(403, "Only guards can mark visitor exit.");
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your account must be approved first.");
     }
 
     const visitorEntry = await VisitorEntry.findById(entryId);
@@ -301,7 +372,7 @@ export const markVisitorExit = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Visitor entry not found.");
     }
 
-    if (!visitorEntry.society.equals(guard.society)) {
+    if (!visitorEntry.society.equals(user.society)) {
         throw new ApiError(
             403,
             "You are not authorized to access this visitor."
@@ -320,9 +391,15 @@ export const markVisitorExit = asyncHandler(async (req, res) => {
 
     await visitorEntry.save();
 
+    const populatedExitEntry = await VisitorEntry.findById(visitorEntry._id)
+        .populate("visitor")
+        .populate("resident", "name phone tower flatNumber")
+        .populate("createdByGuard", "name")
+        .populate("approvedBy", "name");
+
     res.status(200).json({
         success: true,
         message: "Visitor checked out successfully.",
-        visitorEntry,
+        visitorEntry: populatedExitEntry,
     });
 });

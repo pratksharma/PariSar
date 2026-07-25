@@ -43,6 +43,6 @@ const GuardInvitationSchema = new mongoose.Schema(
     }
 );
 
-const guardInvitation = mongoose.model("GuardInvitation", GuardInvitationSchema);
+const GuardInvitation = mongoose.model("GuardInvitation", GuardInvitationSchema);
 
-export default guardInvitation;
+export default GuardInvitation;

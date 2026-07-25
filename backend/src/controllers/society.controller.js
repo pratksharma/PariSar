@@ -1,8 +1,12 @@
 import crypto from "crypto";
+import bcrypt from "bcrypt";
 import Society from "../models/society.model.js";
 import User from "../models/user.model.js";
+import GuardInvitation from "../models/guardInvitation.model.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { generateAccessToken } from "../utils/accessToken.js";
+import { generateRefreshToken } from "../utils/refreshToken.js";
 
 const generateSocietyCode = async () => {
     while (true) {
@@ -88,7 +92,7 @@ export const getMySociety = asyncHandler(async (req, res) => {
         throw new ApiError(404, "You are not a member of any society");
     }
 
-    const society = await Society.findById(user.society).populate("admin");
+    const society = await Society.findById(user.society).populate("admin", "name email phone role");
 
     res.status(200).json({
         success: true,
@@ -394,6 +398,10 @@ export const inviteGuard = asyncHandler(async (req, res) => {
     if (admin.role !== "admin")
         throw new ApiError(403, "Only admins can invite guards.");
 
+    if (admin.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your account must be approved before inviting guards.");
+    }
+
     const society = await Society.findById(admin.society);
 
     if (!society)
@@ -427,63 +435,178 @@ export const inviteGuard = asyncHandler(async (req, res) => {
     });
 });
 
-export const acceptGuardInvite = asyncHandler(async (req, res) => {
-    const { inviteCode } = req.body;
-    const user = req.user;
+export const getGuardInvitations = asyncHandler(async (req, res) => {
+    const admin = req.user;
 
-    if (!inviteCode)
+    if (admin.role !== "admin") {
+        throw new ApiError(403, "Only admins can view guard invitations.");
+    }
+
+    if (admin.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your account must be approved before viewing guard invitations.");
+    }
+
+    const invitations = await GuardInvitation.find({
+        society: admin.society,
+    })
+        .sort({ createdAt: -1 })
+        .populate("invitedBy", "name");
+
+    res.status(200).json({
+        success: true,
+        invitations,
+    });
+});
+
+export const verifyGuardInvite = asyncHandler(async (req, res) => {
+    const { inviteCode } = req.params;
+
+    if (!inviteCode) {
         throw new ApiError(400, "Invite code is required.");
+    }
 
-    if (user.society)
-        throw new ApiError(400, "You already belong to a society.");
+    const invitation = await GuardInvitation.findOne({
+        inviteCode: inviteCode.toUpperCase(),
+    }).populate("society", "name address uniqueCode");
+
+    if (!invitation) {
+        throw new ApiError(404, "Invalid invite code.");
+    }
+
+    if (invitation.accepted) {
+        throw new ApiError(400, "This invitation has already been used.");
+    }
+
+    if (invitation.expiresAt < new Date()) {
+        throw new ApiError(400, "Invitation has expired.");
+    }
+
+    const existingUser = await User.findOne({ phone: invitation.phone });
+
+    res.status(200).json({
+        success: true,
+        message: "Invite code verified successfully.",
+        invitation: {
+            inviteCode: invitation.inviteCode,
+            name: invitation.name,
+            phone: invitation.phone,
+            email: invitation.email,
+            society: invitation.society,
+            userExists: !!existingUser,
+        },
+    });
+});
+
+export const acceptGuardInvite = asyncHandler(async (req, res) => {
+    const { inviteCode, password, phone, name, email } = req.body;
+    let user = req.user;
+
+    if (!inviteCode) {
+        throw new ApiError(400, "Invite code is required.");
+    }
 
     const invitation = await GuardInvitation.findOne({
         inviteCode: inviteCode.toUpperCase(),
     });
 
-    if (!invitation)
+    if (!invitation) {
         throw new ApiError(404, "Invalid invite code.");
+    }
 
-    if (invitation.accepted)
+    if (invitation.accepted) {
         throw new ApiError(400, "This invitation has already been used.");
+    }
 
-    if (invitation.expiresAt < new Date())
+    if (invitation.expiresAt < new Date()) {
         throw new ApiError(400, "Invitation has expired.");
-
-    if (invitation.phone !== user.phone)
-        throw new ApiError(
-            403,
-            "This invitation was issued for another phone number."
-        );
+    }
 
     const society = await Society.findById(invitation.society);
-
-    if (!society)
+    if (!society) {
         throw new ApiError(404, "Society not found.");
+    }
 
-    user.role = "guard";
-    user.society = society._id;
+    if (user) {
+        if (user.society) {
+            throw new ApiError(400, "You already belong to a society.");
+        }
 
-    await user.save();
+        if (invitation.phone !== user.phone) {
+            throw new ApiError(
+                403,
+                "This invitation was issued for another phone number."
+            );
+        }
+
+        user.role = "guard";
+        user.society = society._id;
+        user.approvalStatus = "APPROVED";
+        await user.save();
+    } else {
+        if (!password) {
+            throw new ApiError(400, "Password is required to setup your account.");
+        }
+
+        const targetPhone = invitation.phone || phone;
+        let existingUser = await User.findOne({ phone: targetPhone }).select("+password");
+
+        if (existingUser) {
+            const isMatch = await bcrypt.compare(password, existingUser.password);
+            if (!isMatch) {
+                throw new ApiError(401, "Invalid password for existing account associated with this phone.");
+            }
+            existingUser.role = "guard";
+            existingUser.society = society._id;
+            existingUser.approvalStatus = "APPROVED";
+            await existingUser.save();
+            user = existingUser;
+        } else {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newUser = await User.create({
+                name: name || invitation.name,
+                phone: targetPhone,
+                email: email || invitation.email || `${targetPhone}@parisar.local`,
+                password: hashedPassword,
+                role: "guard",
+                society: society._id,
+                approvalStatus: "APPROVED",
+            });
+            user = newUser;
+        }
+    }
 
     if (!society.guards.includes(user._id)) {
         society.guards.push(user._id);
+        society.totalGuards = (society.totalGuards ?? 0) + 1;
         await society.save();
     }
 
     invitation.accepted = true;
     await invitation.save();
 
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+    await user.save();
+
+    const userData = (await User.findById(user._id).populate("society")).toObject();
+    delete userData.password;
+    delete userData.refreshTokenHash;
+
     res.status(200).json({
         success: true,
         message: "Joined society as a guard successfully.",
+        accessToken,
+        refreshToken,
+        user: userData,
     });
 });
 
 export const getSociety = asyncHandler(async (req, res) => {
     const { societyId } = req.params;
 
-    const society = await Society.findById(societyId).populate("admin");
+    const society = await Society.findById(societyId).populate("admin", "name email phone role");
 
     if (!society) {
         throw new ApiError(404, "Society not found");

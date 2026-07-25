@@ -22,7 +22,7 @@ const Home = () => {
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      <View className="px-4 py-25 gap-6">
+      <View className="px-4 pt-28 pb-28 gap-6">
         {user?.society && (
           <View className="gap-2">
             <PressableFeedback
@@ -56,12 +56,14 @@ const Home = () => {
                     <Lucide name="shield" size={14} />
                     <Chip.Label className="capitalize">{user.role}</Chip.Label>
                   </Chip>
-                  <Chip variant="secondary" color="default">
-                    <Lucide name="house" size={14} />
-                    <Chip.Label>
-                      {user.tower} • {user.flatNumber}
-                    </Chip.Label>
-                  </Chip>
+                  {user.role !== "guard" && user.tower && user.flatNumber ? (
+                    <Chip variant="secondary" color="default">
+                      <Lucide name="house" size={14} />
+                      <Chip.Label>
+                        {user.tower} • {user.flatNumber}
+                      </Chip.Label>
+                    </Chip>
+                  ) : null}
                 </Card.Footer>
               </Card>
             </PressableFeedback>
@@ -74,26 +76,49 @@ const Home = () => {
           </Typography.Heading>
           <View className="gap-4">
             <View className="flex-row gap-4">
-              <PressableFeedback
-                className="flex-1 overflow-auto"
-                onPress={() => router.navigate("/(stack)/complaints")}
-              >
-                <Card className="gap-4 bg-muted">
-                  <Card.Header className="flex-row justify-between items-center">
-                    <View className="h-10 w-10 items-center justify-center rounded-full bg-background-secondary">
-                      <Lucide name="file-exclamation-point" size={20} />
-                    </View>
-                    <Lucide name="chevron-right" size={20} color={background} />
-                  </Card.Header>
-                  <Card.Body>
-                    <Card.Title>
-                      <Typography.Heading type="h5" className="font-medium text-background">
-                        Raise a Complaint
-                      </Typography.Heading>
-                    </Card.Title>
-                  </Card.Body>
-                </Card>
-              </PressableFeedback>
+              {user?.role === "admin" ? (
+                <PressableFeedback
+                  className="flex-1 overflow-auto"
+                  onPress={() => router.navigate("/(stack)/complaints")}
+                >
+                  <Card className="gap-4 bg-muted">
+                    <Card.Header className="flex-row justify-between items-center">
+                      <View className="h-10 w-10 items-center justify-center rounded-full bg-background-secondary">
+                        <Lucide name="file-search" size={20} />
+                      </View>
+                      <Lucide name="chevron-right" size={20} color={background} />
+                    </Card.Header>
+                    <Card.Body>
+                      <Card.Title>
+                        <Typography.Heading type="h5" className="font-medium text-background">
+                          View Complaints
+                        </Typography.Heading>
+                      </Card.Title>
+                    </Card.Body>
+                  </Card>
+                </PressableFeedback>
+              ) : user?.role === "guard" ? null : (
+                <PressableFeedback
+                  className="flex-1 overflow-auto"
+                  onPress={() => router.navigate("/(stack)/complaints")}
+                >
+                  <Card className="gap-4 bg-muted">
+                    <Card.Header className="flex-row justify-between items-center">
+                      <View className="h-10 w-10 items-center justify-center rounded-full bg-background-secondary">
+                        <Lucide name="file-exclamation-point" size={20} />
+                      </View>
+                      <Lucide name="chevron-right" size={20} color={background} />
+                    </Card.Header>
+                    <Card.Body>
+                      <Card.Title>
+                        <Typography.Heading type="h5" className="font-medium text-background">
+                          Raise a Complaint
+                        </Typography.Heading>
+                      </Card.Title>
+                    </Card.Body>
+                  </Card>
+                </PressableFeedback>
+              )}
               <PressableFeedback
                 className="flex-1 overflow-auto"
                 onPress={() => router.navigate("/(tabs)/visitors")}
@@ -108,35 +133,37 @@ const Home = () => {
                   <Card.Body>
                     <Card.Title>
                       <Typography.Heading type="h5" className="font-medium text-background">
-                        Pre-approve Visitor
+                        {user?.role === "guard" ? "Add Visitor" : "Pre-approve Visitor"}
                       </Typography.Heading>
                     </Card.Title>
                   </Card.Body>
                 </Card>
               </PressableFeedback>
             </View>
-            <PressableFeedback
-              className="flex-1 overflow-auto"
-              onPress={() => router.navigate("/(stack)/amenities")}
-            >
-              <Card className="flex-row flex-1 items-center justify-between">
-                <View className="flex-row gap-2 items-center">
-                  <Card.Header className="h-10 w-10 items-center justify-center rounded-full bg-background-secondary">
-                    <Lucide name="shapes" size={20} />
-                  </Card.Header>
-                  <Card.Body>
-                    <Card.Title>
-                      <Typography.Heading type="h5" className="font-medium">
-                        Book Amenities
-                      </Typography.Heading>
-                    </Card.Title>
-                  </Card.Body>
-                </View>
-                <Card.Footer>
-                  <Lucide name="chevron-right" size={20} />
-                </Card.Footer>
-              </Card>
-            </PressableFeedback>
+            {user?.role === "guard" ? null : (
+              <PressableFeedback
+                className="flex-1 overflow-auto"
+                onPress={() => router.navigate("/(stack)/amenities")}
+              >
+                <Card className="flex-row flex-1 items-center justify-between">
+                  <View className="flex-row gap-2 items-center">
+                    <Card.Header className="h-10 w-10 items-center justify-center rounded-full bg-background-secondary">
+                      <Lucide name="shapes" size={20} />
+                    </Card.Header>
+                    <Card.Body>
+                      <Card.Title>
+                        <Typography.Heading type="h5" className="font-medium">
+                          Book Amenities
+                        </Typography.Heading>
+                      </Card.Title>
+                    </Card.Body>
+                  </View>
+                  <Card.Footer>
+                    <Lucide name="chevron-right" size={20} />
+                  </Card.Footer>
+                </Card>
+              </PressableFeedback>
+            )}
 
             {!latestNotice && (
               <PressableFeedback

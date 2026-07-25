@@ -42,6 +42,12 @@ const SocietySchema = new mongoose.Schema(
       default: 0,
     },
 
+    guards: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+
     isActive: {
       type: Boolean,
       default: true,

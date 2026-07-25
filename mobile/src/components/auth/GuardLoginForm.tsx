@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import {
   Button,
   FieldError,
@@ -11,14 +11,12 @@ import {
   useToast,
 } from "heroui-native";
 import { useAuthStore } from "@/stores/authStore";
-import { useRouter } from "expo-router";
 import Lucide from "@react-native-vector-icons/lucide";
 import { FadeIn } from "react-native-reanimated";
 
-export default function LoginForm() {
+export default function GuardLoginForm() {
   const login = useAuthStore((state) => state.login);
   const loading = useAuthStore((state) => state.loading);
-  const router = useRouter();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -27,13 +25,11 @@ export default function LoginForm() {
   const [passwordError, setPasswordError] = useState("");
 
   const [background] = useThemeColor(["background"]);
-
   const { toast } = useToast();
   const [success, danger] = useThemeColor(["success", "danger"]);
 
   const validate = () => {
     let valid = true;
-
     setIdentifierError("");
     setPasswordError("");
 
@@ -54,17 +50,17 @@ export default function LoginForm() {
     if (!validate()) return;
 
     try {
-      await login(identifier.trim(), password);
+      await login(identifier.trim(), password, "guard");
       toast.show({
         variant: "success",
-        label: "Welcome back",
-        description: "Successfully signed in.",
+        label: "Guard Authenticated",
+        description: "Welcome back to your security shift.",
         icon: <Lucide name="shield-check" size={24} color={success} />,
       });
     } catch (err: any) {
       toast.show({
         variant: "danger",
-        label: "Login failed",
+        label: "Guard Login Failed",
         description: err?.response?.data?.message ?? err.message,
         icon: <Lucide name="shield-alert" size={24} color={danger} />,
       });
@@ -77,7 +73,7 @@ export default function LoginForm() {
         <Label>Email or Phone</Label>
 
         <Input
-          placeholder="Enter your email or phone"
+          placeholder="Enter guard email or phone"
           value={identifier}
           onChangeText={setIdentifier}
           autoCapitalize="none"
@@ -103,19 +99,16 @@ export default function LoginForm() {
         <FieldError>{passwordError}</FieldError>
       </TextField>
 
-      <Button onPress={handleLogin}>
+      <Button onPress={handleLogin} isDisabled={loading}>
         {loading ? (
           <Spinner entering={FadeIn.delay(50)} color={background} />
         ) : (
-          <Button.Label>Login</Button.Label>
+          <>
+            <Lucide name="shield-check" size={18} />
+            <Button.Label>Sign In as Guard</Button.Label>
+          </>
         )}
       </Button>
-
-      <Pressable onPress={() => router.push("/(auth)/guard-login")}>
-        <Text className="text-center text-sm text-muted underline">
-          Security Guard? Go to Guard Portal
-        </Text>
-      </Pressable>
     </View>
   );
 }

@@ -4,11 +4,18 @@ import ApiError from "../utils/ApiError.js";
 
 export const createComplaint = asyncHandler(async (req, res) => {
     const { title, description } = req.body;
-
     const user = req.user;
 
     if (!title || !description) {
         throw new ApiError(400, "Title and description are required.");
+    }
+
+    if (!["resident", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only residents and admins can create complaints.");
+    }
+
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
     }
 
     if (!user.society) {
@@ -36,6 +43,10 @@ export const getComplaints = asyncHandler(async (req, res) => {
         throw new ApiError(400, "You are not part of any society.");
     }
 
+    if (user.role === "resident" && user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
+    }
+
     let complaints;
 
     if (user.role === "admin") {
@@ -58,6 +69,15 @@ export const getComplaints = asyncHandler(async (req, res) => {
 
 export const deleteComplaint = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
+    const user = req.user;
+
+    if (!["resident", "admin"].includes(user.role)) {
+        throw new ApiError(403, "Only residents and admins can delete complaints.");
+    }
+
+    if (user.approvalStatus !== "APPROVED") {
+        throw new ApiError(403, "Your society request must be approved first.");
+    }
 
     const complaint = await Complaint.findById(complaintId);
 
@@ -65,11 +85,11 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Complaint not found.");
     }
 
-    if (!complaint.resident.equals(req.user._id)) {
+    if (user.role !== "admin" && !complaint.resident.equals(user._id)) {
         throw new ApiError(403, "You are not authorized to delete this complaint.");
     }
 
-    if (complaint.status !== "open") {
+    if (complaint.status !== "open" && user.role !== "admin") {
         throw new ApiError(
             400,
             "Resolved complaints cannot be deleted."
@@ -87,7 +107,6 @@ export const deleteComplaint = asyncHandler(async (req, res) => {
 export const updateComplaintStatus = asyncHandler(async (req, res) => {
     const { complaintId } = req.params;
     const { status } = req.body;
-
     const user = req.user;
 
     if (user.role !== "admin") {
@@ -112,7 +131,6 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
     }
 
     complaint.status = status;
-
     await complaint.save();
 
     res.json({

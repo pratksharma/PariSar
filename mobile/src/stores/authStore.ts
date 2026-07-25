@@ -15,7 +15,14 @@ export interface Society {
   address: string;
   description: string;
   uniqueCode: string;
-  admin: string;
+  admin:
+    | string
+    | {
+        _id: string;
+        name: string;
+        email?: string;
+        phone?: string;
+      };
   totalResidents: number;
   totalGuards: number;
   isActive: boolean;
@@ -37,6 +44,20 @@ export interface User {
   updatedAt: string;
 }
 
+export interface VerifiedGuardInvite {
+  inviteCode: string;
+  name: string;
+  phone: string;
+  email?: string;
+  society: {
+    _id: string;
+    name: string;
+    address: string;
+    uniqueCode: string;
+  };
+  userExists: boolean;
+}
+
 interface AuthState {
   user: User | null;
   accessToken: string | null;
@@ -51,7 +72,25 @@ interface AuthState {
     password: string;
   }) => Promise<void>;
 
-  login: (identifier: string, password: string) => Promise<void>;
+  registerGuard: (data: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    inviteCode: string;
+  }) => Promise<void>;
+
+  login: (identifier: string, password: string, role?: UserRole) => Promise<void>;
+
+  verifyGuardInvite: (inviteCode: string) => Promise<VerifiedGuardInvite>;
+
+  acceptGuardInvite: (data: {
+    inviteCode: string;
+    password?: string;
+    phone?: string;
+    name?: string;
+    email?: string;
+  }) => Promise<void>;
 
   logout: () => Promise<void>;
 
@@ -91,13 +130,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  login: async (identifier, password) => {
+  registerGuard: async (data) => {
+    set({ loading: true });
+
+    try {
+      const res = await api.post("/auth/register-guard", data);
+
+      const { accessToken, refreshToken } = res.data;
+
+      await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, accessToken);
+
+      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+
+      set({
+        accessToken,
+      });
+
+      await get().getUser();
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  login: async (identifier, password, role) => {
     set({ loading: true });
 
     try {
       const res = await api.post("/auth/login", {
         identifier,
         password,
+        role,
       });
 
       const { accessToken, refreshToken } = res.data;
@@ -116,6 +178,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  verifyGuardInvite: async (inviteCode) => {
+    const res = await api.get(`/society/verify-guard-invite/${inviteCode}`);
+    return res.data.invitation;
+  },
+
+  acceptGuardInvite: async (payload) => {
+    set({ loading: true });
+
+    try {
+      const res = await api.post("/society/accept-guard-invite", payload);
+
+      if (res.data.accessToken && res.data.refreshToken) {
+        await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, res.data.accessToken);
+        await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, res.data.refreshToken);
+        set({ accessToken: res.data.accessToken });
+      }
+
+      await get().getUser();
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   logout: async () => {
     try {
       const token = get().accessToken || (await SecureStore.getItemAsync(ACCESS_TOKEN_KEY));
@@ -127,6 +212,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+
+    try {
+      const { useSocietyStore } = require("./societyStore");
+      const { useVisitorStore } = require("./visitorStore");
+      const { useNoticeStore } = require("./noticeStore");
+      const { useComplaintStore } = require("./complaintStore");
+      const { useAmenitiesStore } = require("./amenitiesStore");
+
+      useSocietyStore.getState().clear();
+      useVisitorStore.getState().clear();
+      useNoticeStore.getState().clear();
+      useComplaintStore.getState().clear();
+      useAmenitiesStore.getState().clear();
+    } catch {}
 
     set({
       user: null,

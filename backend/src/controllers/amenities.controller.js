@@ -1,4 +1,5 @@
 import Amenity from "../models/amenity.model.js";
+import AmenityBooking from "../models/amenityBooking.model.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
@@ -160,7 +161,7 @@ export const createAmenity = asyncHandler(async (req, res) => {
     res.status(201).json({
         success: true,
         message: "Amenity created successfully.",
-        date: amenity,
+        data: amenity,
     });
 });
 
@@ -203,13 +204,11 @@ export const bookAmenity = asyncHandler(async (req, res) => {
 
     const {
         amenity,
-        bookingDate,
         startTime,
         endTime,
-        purpose,
     } = req.body;
 
-    if (!amenity || !bookingDate || !startTime || !endTime) {
+    if (!amenity || !startTime || !endTime) {
         throw new ApiError(
             400,
             "Amenity, booking date, start time and end time are required."
@@ -228,7 +227,6 @@ export const bookAmenity = asyncHandler(async (req, res) => {
 
     const conflict = await AmenityBooking.findOne({
         amenity,
-        bookingDate,
         status: "approved",
         startTime: { $lt: endTime },
         endTime: { $gt: startTime },
@@ -247,10 +245,8 @@ export const bookAmenity = asyncHandler(async (req, res) => {
         society: user.society,
         amenity,
         resident: user._id,
-        bookingDate,
         startTime,
         endTime,
-        purpose: purpose?.trim() || "",
 
         status: isAdmin ? "approved" : "pending",
 
@@ -258,12 +254,17 @@ export const bookAmenity = asyncHandler(async (req, res) => {
         approvedAt: isAdmin ? new Date() : null,
     });
 
+    const populatedBooking = await AmenityBooking.findById(booking._id)
+        .populate("amenity")
+        .populate("resident", "name email phone")
+        .populate("admin", "name");
+
     res.status(201).json({
         success: true,
         message: isAdmin
             ? "Amenity booked successfully."
             : "Booking request submitted successfully.",
-        data: booking,
+        data: populatedBooking,
     });
 });
 
@@ -319,10 +320,15 @@ export const approveAmenityBooking = asyncHandler(async (req, res) => {
 
     await booking.save();
 
+    const populatedBooking = await AmenityBooking.findById(booking._id)
+        .populate("amenity")
+        .populate("resident", "name email phone")
+        .populate("admin", "name");
+
     res.status(200).json({
         success: true,
         message: "Booking approved successfully.",
-        data: booking,
+        data: populatedBooking,
     });
 });
 
@@ -357,10 +363,15 @@ export const rejectAmenityBooking = asyncHandler(async (req, res) => {
 
     await booking.save();
 
+    const populatedBooking = await AmenityBooking.findById(booking._id)
+        .populate("amenity")
+        .populate("resident", "name email phone")
+        .populate("admin", "name");
+
     res.status(200).json({
         success: true,
         message: "Booking rejected successfully.",
-        data: booking,
+        data: populatedBooking,
     });
 });
 
@@ -403,9 +414,14 @@ export const cancelAmenityBooking = asyncHandler(async (req, res) => {
 
     await booking.save();
 
+    const populatedBooking = await AmenityBooking.findById(booking._id)
+        .populate("amenity")
+        .populate("resident", "name email phone")
+        .populate("admin", "name");
+
     res.status(200).json({
         success: true,
         message: "Booking cancelled successfully.",
-        data: booking,
+        data: populatedBooking,
     });
 });
