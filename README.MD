@@ -1,6 +1,6 @@
 # PariSar
 
-<img src="./public/banner.png" width="100%" />
+<img src="./public/banner.jpg" width="100%" />
 
 PariSar is a modern society management platform that streamlines communication, visitor management, maintenance, announcements, complaints, deliveries, and other day-to-day operations for residential communities.
 
@@ -45,7 +45,7 @@ This repository serves as the **workspace** for the PariSar project and contains
 │   └── package.json
 │
 ├── public/                   # Media & documentation assets
-│   ├── banner.png            # Repository banner image
+│   ├── banner.jpg            # Repository banner image
 │   └── preview/              # Application preview screenshots
 └── README.MD                 # Project workspace documentation
 ```
