@@ -18,6 +18,18 @@ This repository serves as the **workspace** for the PariSar project and contains
   <a href="./public/preview">View more screenshots →</a>
 </p>
 
+## Demo Credentials
+
+You can explore the app using the following demo accounts:
+
+| Role     | Email                  | Password    |
+| -------- | ---------------------- | ----------- |
+| Admin    | `bhide@example.com`    | `Test@123!` |
+| Resident | `jethalal@example.com` | `Test@123!` |
+| Guard    | `jai@example.com`      | `Test@123!` |
+
+> **Note:** These are demo accounts provided for testing the application.
+
 ## Project Structure
 
 ```text
